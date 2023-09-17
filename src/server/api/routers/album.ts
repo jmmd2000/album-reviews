@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-export const exampleRouter = createTRPCRouter({
+export const albumRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
@@ -11,6 +11,6 @@ export const exampleRouter = createTRPCRouter({
       };
     }),
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.db.example.findMany();
+    return ctx.db.reviewedAlbum.findMany();
   }),
 });
