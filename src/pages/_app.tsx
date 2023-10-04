@@ -1,11 +1,18 @@
 import { type AppType } from "next/app";
+import { Inter } from "next/font/google";
 
 import { api } from "~/utils/api";
+
+const inter = Inter({ subsets: ["latin"] });
 
 import "~/styles/globals.css";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  return <Component {...pageProps} />;
+  return (
+    <main className={inter.className}>
+      <Component {...pageProps} />
+    </main>
+  );
 };
 
 export default api.withTRPC(MyApp);
