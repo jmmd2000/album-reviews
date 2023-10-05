@@ -27,6 +27,57 @@ export interface SpotifyAlbum {
   total_tracks: number;
   type: string;
   uri: string;
+  tracks: SpotifyTrack[];
+}
+
+export interface SpotifyTrack {
+  artists: {
+    external_urls: {
+      spotify: string;
+    };
+    href: string;
+    id: string;
+    name: string;
+    type: string;
+    uri: string;
+  }[];
+  available_markets: string[];
+  disc_number: number;
+  duration_ms: number;
+  explicit: boolean;
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  is_local: boolean;
+  name: string;
+  preview_url: string;
+  track_number: number;
+  type: string;
+  uri: string;
+}
+
+export interface SpotifyArtist {
+  external_urls: {
+    spotify: string;
+  };
+  followers: {
+    href: string | null;
+    total: number;
+  };
+  genres: string[];
+  href: string;
+  id: string;
+  images: {
+    height: number | null;
+    url: string;
+    width: number | null;
+  }[];
+  name: string;
+  popularity: number;
+  type: string;
+  uri: string;
 }
 
 export interface SpotifySearchResponse {
@@ -41,28 +92,6 @@ export interface SpotifySearchResponse {
   };
 }
 
-// export interface TokenObject {
-//   id: number;
-//   token: string;
-//   expires_in: number;
-//   created_at: Date;
-//   updated_At: Date;
-// }
-
-// export interface RatingValue {
-//   ratingString:
-//     | "Perfect"
-//     | "Amazing"
-//     | "Brilliant"
-//     | "Great"
-//     | "Good"
-//     | "Decent"
-//     | "OK"
-//     | "Bad"
-//     | "Awful"
-//     | "Terrible"
-//     | "Non-song";
-// }
 export type RatingValue =
   | "Perfect"
   | "Amazing"
@@ -75,3 +104,11 @@ export type RatingValue =
   | "Awful"
   | "Terrible"
   | "Non-song";
+
+// export interface TokenObject {
+//   id: number;
+//   token: string;
+//   expires_in: number;
+//   created_at: Date;
+//   updated_At: Date;
+// }

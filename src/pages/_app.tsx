@@ -6,12 +6,18 @@ import { api } from "~/utils/api";
 const inter = Inter({ subsets: ["latin"] });
 
 import "~/styles/globals.css";
+import { Layout } from "~/components/layout";
+import { TokenProvider } from "~/context/TokenContext";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <main className={inter.className}>
-      <Component {...pageProps} />
-    </main>
+    <TokenProvider>
+      <div className={inter.className}>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </div>
+    </TokenProvider>
   );
 };
 

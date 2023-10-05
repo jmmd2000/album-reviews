@@ -18,7 +18,6 @@ export default function Home() {
   ];
   return (
     <>
-      <Navbar />
       <div className="flex w-full justify-evenly">
         {/* Home Content */}
         <div className="flex max-w-[50%] flex-col p-16">
@@ -49,7 +48,7 @@ export default function Home() {
 
         {/* Image grid */}
         <div className="relative m-12 grid max-h-max max-w-max grid-cols-2 items-center justify-center">
-          <div className="absolute h-full w-full bg-gradient-to-r from-zinc-900"></div>
+          <div className="absolute h-full w-full bg-gradient-to-r from-zinc-900 via-transparent"></div>
           <div className="max-h-max max-w-max">
             <img
               src="https://i.scdn.co/image/ab6761610000f1786be070445b03e0b63147c2c1"
@@ -83,49 +82,6 @@ export default function Home() {
     </>
   );
 }
-
-const Navbar = () => {
-  return (
-    <nav
-      className="flex h-[90px] w-screen items-center justify-start gap-8 bg-gray-700 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-sm
-    "
-    >
-      <Image src="/favicon.ico" alt="logo" width={50} height={50} priority />
-      <div className="flex items-baseline justify-evenly gap-10">
-        <NavLink href="/" active>
-          Home
-        </NavLink>
-        <NavLink href="/" active={false}>
-          Albums
-        </NavLink>
-        <NavLink href="/" active={false}>
-          Artists
-        </NavLink>
-      </div>
-    </nav>
-  );
-};
-
-const NavLink = (props: {
-  href: string;
-  children: React.ReactNode;
-  active: boolean;
-}) => {
-  const { href, children, active } = props;
-
-  const fancyUnderlineStyle =
-    "relative block w-fit text-center transition after:absolute after:block after:h-[3px] after:w-full after:origin-center after:scale-x-0 after:bg-white after:transition after:duration-300 after:content-[''] hover:text-white after:hover:scale-x-100 text-2xl";
-
-  const styles = active
-    ? "text-white " + fancyUnderlineStyle
-    : "text-gray-400 " + fancyUnderlineStyle;
-
-  return (
-    <a href={href} className={styles}>
-      {children}
-    </a>
-  );
-};
 
 interface RatingCardProps {
   rating: RatingValue;

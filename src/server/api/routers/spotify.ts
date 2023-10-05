@@ -4,9 +4,7 @@ import { z } from "zod";
 import { env } from "~/env.mjs";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { SpotifySearchResponse } from "~/types";
-
-const prisma = new PrismaClient();
+import { SpotifyAlbum, SpotifyArtist, SpotifySearchResponse } from "~/types";
 
 export const spotifyRouter = createTRPCRouter({
   fetchAccessToken: publicProcedure.input(z.string()).query(async () => {
@@ -68,7 +66,7 @@ export const spotifyRouter = createTRPCRouter({
         const response: Response = await fetch(
           "https://api.spotify.com/v1/search?q=" +
             query +
-            "&type=album&limit=18",
+            "&type=album&limit=14",
           searchParamaters,
         );
         // return response.json();
@@ -78,6 +76,69 @@ export const spotifyRouter = createTRPCRouter({
         console.log(err, "ERROR IN SEARCH ALBUMS");
       }
     }),
+
+  getAlbumDetails: publicProcedure
+    .input(z.object({ id: z.string(), accessToken: z.string() }))
+    .query(async (input) => {
+      const id = input.input.id;
+      const accessToken = input.input.accessToken;
+
+      const searchParamaters = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + accessToken,
+        },
+      };
+
+      try {
+        const response: Response = await fetch(
+          "https://api.spotify.com/v1/albums/" + id,
+          searchParamaters,
+        );
+        // return response.json();
+        const data = (await response.json()) as SpotifyAlbum;
+        return data;
+      } catch (err) {
+        console.log(err, "ERROR IN GET ALBUM DETAILS");
+      }
+    }),
+
+  getArtistImageFromSpotify: publicProcedure
+    .input(z.object({ id: z.string(), accessToken: z.string() }))
+    .query(async (input) => {
+      const id = input.input.id;
+      const accessToken = input.input.accessToken;
+
+      const searchParamaters = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + accessToken,
+        },
+      };
+
+      try {
+        const response: Response = await fetch(
+          "https://api.spotify.com/v1/artists/" + id,
+          searchParamaters,
+        );
+        // return response.json();
+        const data = (await response.json()) as SpotifyArtist;
+        const image =
+          data.images[2] === undefined
+            ? data.images[1] === undefined
+              ? data.images[0] === undefined
+                ? null
+                : data.images[0].url
+              : data.images[1].url
+            : data.images[2].url;
+        return image;
+      } catch (err) {
+        console.log(err, "ERROR IN GET ARTIST IMAGE FROM SPOTIFY");
+      }
+    }),
+
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.db.reviewedAlbum.findMany();
   }),

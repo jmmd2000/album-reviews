@@ -3,7 +3,7 @@ import { ReviewedAlbum } from "@prisma/client";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { env } from "../env.mjs";
+import { env } from "~/env.mjs";
 
 import { RouterOutputs, api } from "~/utils/api";
 import { getAccessToken } from "~/server/spotify";
@@ -11,12 +11,14 @@ import { JSX, use, useEffect, useState } from "react";
 import { SpotifyAlbum, SpotifySearchResponse } from "src/types";
 import { set, z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTokenContext } from "~/context/TokenContext";
 
-export default function Home() {
+export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [token, setToken] = useState("");
+  // const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const { token, updateToken } = useTokenContext();
 
   // Fetches the access token to be used with queries.
   // Disabled by default, runs once on mount.
@@ -55,7 +57,7 @@ export default function Home() {
       // If the token is successfully fetched, and is not undefined, save it in state.
       if (isSuccess) {
         if (data !== undefined) {
-          setToken(data.access_token);
+          updateToken(data.access_token);
         }
       }
 
@@ -112,15 +114,35 @@ export default function Home() {
       });
   };
 
-  // return (
-  //   <div className="bg-red-100">
-  //     <input type="text" onChange={(e) => setInputValue(e.target.value)} />
-  //     <button onClick={handleClick}>Submit</button>
-  //     <AlbumGrid albums={searchResults} />
-  //   </div>
-  // );
-
-  return <div></div>;
+  return (
+    <div className="m-10">
+      <div className="flex flex-row gap-2">
+        <input
+          type="text"
+          className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#D2D2D3]"
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Search album, artist or year..."
+        />
+        <button
+          className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+          onClick={handleClick}
+        >
+          Submit
+        </button>
+      </div>
+      {
+        // If there are search results, render them.
+        searchResults.length !== 0 ? (
+          <AlbumGrid albums={searchResults} />
+        ) : (
+          // If there are no search results, render a message.
+          <h2 className="m-16 text-xl text-[#D2D2D3]">
+            Use the input to search for albums.
+          </h2>
+        )
+      }
+    </div>
+  );
 }
 
 // type AlbumReview = RouterOutputs["album"]["getAll"][number];
@@ -129,19 +151,43 @@ const AlbumCard = (props: SpotifyAlbum) => {
   // const artistData = api.artist.getByID.useQuery({ id: props.artists[0]!.id });
   // const artist = artistData.data;
   // console.log(artistData);
+  // Get just the year from the release date
+  const date = new Date(props.release_date);
+  const year = date.getFullYear();
+
+  // Apply custom marquee scroll animation to
+  // albums with names longer than 25 characters. (arbitrary)
+  let scrollAnimation = "";
+  if (props.name.length > 25) {
+    scrollAnimation = "animate-marquee";
+  }
+
   return (
-    <div className="flex aspect-square h-72 flex-col items-center p-6">
-      <p className="">{props.name}</p>
-      <img
-        src={props.images[0]!.url}
-        alt="Album cover"
-        className="aspect-square h-52 transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44"
-      />
-      <div className="flex">
-        <p>{props.artists[0]?.name}</p>
-        <p>{props.release_date}</p>
+    <Link href={`/albums/new/${props.id}`}>
+      <div className="mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
+        <img
+          src={props.images[0]!.url}
+          alt="Album cover"
+          className="aspect-square transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 2xl:h-52"
+        />
+        <div className="mb-1 mt-2 flex w-full flex-col items-start ">
+          <p
+            className={
+              "mb-1 text-base font-medium text-white " + scrollAnimation
+            }
+          >
+            {props.name}
+          </p>
+          <div className="mt-1 flex gap-1">
+            <p className="text-xs font-medium text-[#717171]">
+              {props.artists[0]?.name}
+            </p>
+            <p className="text-xs font-medium text-[#717171]">-</p>
+            <p className="text-xs font-medium text-[#717171]">{year}</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -158,15 +204,15 @@ const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
 
   // Filters out singles and EPs.
   const filteredAlbums = props.albums.filter(
-    (album) => album.album_type === "album",
+    (album) =>
+      album.album_type === "album" || album.album_type === "compilation",
   );
+  console.log(filteredAlbums);
   return (
-    <div className="m-5 grid grid-cols-1 place-items-center bg-green-200 p-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-      {filteredAlbums.length !== 0 ? (
-        filteredAlbums.map((album) => <AlbumCard {...album} key={album.id} />)
-      ) : (
-        <div>loading</div>
-      )}
+    <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">
+      {filteredAlbums.length !== 0
+        ? filteredAlbums.map((album) => <AlbumCard {...album} key={album.id} />)
+        : null}
     </div>
   );
 };
