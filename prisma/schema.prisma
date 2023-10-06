@@ -63,4 +63,11 @@ model AccessToken {
     updated_at             Int?        
 }
 
+model Test{
+  id                     Int             @id @default(autoincrement())
+  createdAt              DateTime        @default(now())
+  title                  String
+  age                    Int        
+  country                String  
+}
 

@@ -2,9 +2,15 @@ import { PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { env } from "~/env.mjs";
+import { formatDate } from "~/helpers/dateFormat";
+import { getTotalDuration } from "~/helpers/durationConversion";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { SpotifyAlbum, SpotifyArtist, SpotifySearchResponse } from "~/types";
+import {
+  type SpotifyAlbum,
+  type SpotifyArtist,
+  type SpotifySearchResponse,
+} from "~/types";
 
 export const spotifyRouter = createTRPCRouter({
   fetchAccessToken: publicProcedure.input(z.string()).query(async () => {
@@ -98,7 +104,12 @@ export const spotifyRouter = createTRPCRouter({
         );
         // return response.json();
         const data = (await response.json()) as SpotifyAlbum;
-        return data;
+        const fullData = {
+          album: data,
+          formatted_runtime: getTotalDuration(data),
+          formatted_release_date: formatDate(data.release_date),
+        };
+        return fullData;
       } catch (err) {
         console.log(err, "ERROR IN GET ALBUM DETAILS");
       }
@@ -139,8 +150,27 @@ export const spotifyRouter = createTRPCRouter({
       }
     }),
 
+  // createAlbumReview: publicProcedure
+  //   .input(
+  //     z.object({
+  //       title: z.string(),
+  //       age: z.number(),
+  //       country: z.string(),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const test = await ctx.prisma.reviewedAlbum.create({
+  //       data: {
+
+  //       }
+  //     });
+
+  //     return test;
+  //   }),
+
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.db.reviewedAlbum.findMany();
+    const test = ctx.prisma.test.findMany();
+    return test;
   }),
 });
 

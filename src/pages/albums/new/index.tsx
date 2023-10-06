@@ -12,6 +12,8 @@ import { SpotifyAlbum, SpotifySearchResponse } from "src/types";
 import { set, z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTokenContext } from "~/context/TokenContext";
+import { Loader } from "~/components/Loader";
+import { RatingChip } from "~/components/RatingChip";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
@@ -19,17 +21,6 @@ export default function NewAlbumPage() {
   // const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const { token, updateToken } = useTokenContext();
-
-  // Fetches the access token to be used with queries.
-  // Disabled by default, runs once on mount.
-  const { data: fetchedToken, refetch: retryFetch } =
-    api.spotify.fetchAccessToken.useQuery("", {
-      retry: false,
-      enabled: false,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    });
 
   // Queries Spotify with a search term. Disabled by default, runs on button click.
   // Runs once on mount, but no query value is set so its a wasted request.
@@ -49,32 +40,35 @@ export default function NewAlbumPage() {
       },
     );
 
-  useEffect(() => {
-    // Fetches token and saves it in state.
-    async function getToken() {
-      const { data, isSuccess, isError } = await retryFetch();
+  const { data } = api.spotify.getAll.useQuery();
+  console.log(data);
 
-      // If the token is successfully fetched, and is not undefined, save it in state.
-      if (isSuccess) {
-        if (data !== undefined) {
-          updateToken(data.access_token);
-        }
-      }
+  // useEffect(() => {
+  //   // Fetches token and saves it in state.
+  //   async function getToken() {
+  //     const { data, isSuccess, isError } = await retryFetch();
 
-      // If there is an error, throw it.
-      if (isError) {
-        throw new Error("Error fetching access token");
-      }
-    }
+  //     // If the token is successfully fetched, and is not undefined, save it in state.
+  //     if (isSuccess) {
+  //       if (data !== undefined) {
+  //         updateToken(data.access_token);
+  //       }
+  //     }
 
-    getToken()
-      .then(() => {
-        console.log("done");
-      })
-      .catch((error: Error) => {
-        console.log(error.message);
-      });
-  }, []);
+  //     // If there is an error, throw it.
+  //     if (isError) {
+  //       throw new Error("Error fetching access token");
+  //     }
+  //   }
+
+  //   getToken()
+  //     .then(() => {
+  //       console.log("done");
+  //     })
+  //     .catch((error: Error) => {
+  //       console.log(error.message);
+  //     });
+  // }, []);
 
   // Queries Spotify with a search term and saves the results in state.
   async function handleSearch() {
@@ -84,12 +78,13 @@ export default function NewAlbumPage() {
 
       // Handle loading state
       if (isLoading) {
-        console.log("loading");
+        setLoading(true);
       }
 
       // If the search results are successfully fetched, and are not undefined, save them in state.
       if (isSuccess) {
         if (data !== undefined) {
+          setLoading(false);
           setSearchResults(data.albums.items);
         }
       }
@@ -130,7 +125,7 @@ export default function NewAlbumPage() {
           Submit
         </button>
       </div>
-      {
+      {/* {
         // If there are search results, render them.
         searchResults.length !== 0 ? (
           <AlbumGrid albums={searchResults} />
@@ -140,7 +135,16 @@ export default function NewAlbumPage() {
             Use the input to search for albums.
           </h2>
         )
-      }
+      } */}
+      {loading ? (
+        <Loader />
+      ) : searchResults.length !== 0 ? (
+        <AlbumGrid albums={searchResults} />
+      ) : (
+        <h2 className="m-16 text-xl text-[#D2D2D3]">
+          Use the input to search for albums.
+        </h2>
+      )}
     </div>
   );
 }
@@ -164,7 +168,7 @@ const AlbumCard = (props: SpotifyAlbum) => {
 
   return (
     <Link href={`/albums/new/${props.id}`}>
-      <div className="mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
+      <div className="relative mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
         <img
           src={props.images[0]!.url}
           alt="Album cover"
@@ -178,13 +182,14 @@ const AlbumCard = (props: SpotifyAlbum) => {
           >
             {props.name}
           </p>
-          <div className="mt-1 flex gap-1">
+          <div className="mt-1 flex items-center gap-1">
             <p className="text-xs font-medium text-[#717171]">
               {props.artists[0]?.name}
             </p>
             <p className="text-xs font-medium text-[#717171]">-</p>
             <p className="text-xs font-medium text-[#717171]">{year}</p>
           </div>
+          {/* <RatingChip ratingNumber={100} form="small" /> */}
         </div>
       </div>
     </Link>
@@ -209,7 +214,7 @@ const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   );
   console.log(filteredAlbums);
   return (
-    <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">
+    <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7">
       {filteredAlbums.length !== 0
         ? filteredAlbums.map((album) => <AlbumCard {...album} key={album.id} />)
         : null}

@@ -11,18 +11,18 @@ export const artistRouter = createTRPCRouter({
       };
     }),
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.db.reviewedAlbum.findMany();
+    return ctx.prisma.reviewedAlbum.findMany();
   }), */
   getByID: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input, ctx }) => {
-      return ctx.db.artist.findUnique({
+      return ctx.prisma.artist.findUnique({
         where: {
           id: input.id,
         },
       });
     }),
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.db.artist.findMany();
+    return ctx.prisma.artist.findMany();
   }),
 });

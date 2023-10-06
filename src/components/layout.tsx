@@ -26,7 +26,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className="flex h-[90px] w-screen items-center justify-start gap-8 bg-gray-700 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-sm
+      className="flex h-[90px] w-full items-center justify-start gap-8 bg-gray-700 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-sm
     "
     >
       <Image src="/favicon.ico" alt="logo" width={50} height={50} priority />

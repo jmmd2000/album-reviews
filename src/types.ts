@@ -27,7 +27,15 @@ export interface SpotifyAlbum {
   total_tracks: number;
   type: string;
   uri: string;
-  tracks: SpotifyTrack[];
+  tracks: {
+    items: SpotifyTrack[];
+  };
+}
+
+export interface AlbumWithExtras {
+  album: SpotifyAlbum;
+  formatted_runtime: string;
+  formatted_release_date: string;
 }
 
 export interface SpotifyTrack {
