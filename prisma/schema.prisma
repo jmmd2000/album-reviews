@@ -15,20 +15,22 @@ generator client {
 model ReviewedAlbum {
     id                     Int             @id @default(autoincrement())
     createdAt              DateTime        @default(now())
-    artist                 Artist          @relation(fields: [artist_id], references: [id])
-    artist_id              Int
-    album_type             String
+    artist                 Artist          @relation(fields: [artist_db_id], references: [id])
+    artist_db_id           Int
     name                   String
     spotify_id             String          @unique
     release_date           String
-    image_urls             String          @db.TinyText       //JSON object of array of urls
-    tracks                 Track[]
+    release_year           Int
+    image_urls             String          @db.Text       //JSON object of array of urls
+    scored_tracks          String          @db.Text        //JSON object of array of tracks
+    best_song              String
+    worst_song             String
     runtime                String?
-    review_content         String?         @db.TinyText
+    review_content         String?         @db.Text
     review_score           Float?
     review_date            String?
 
-    @@index([artist_id])
+    @@index([artist_db_id])
 
 }
 
@@ -36,23 +38,10 @@ model Artist{
     id                     Int             @id @default(autoincrement())
     name                   String
     spotify_id             String          @unique
-    image_urls             String          @db.TinyText //JSON object of array of urls
+    image_urls             String          @db.Text //JSON object of array of urls
     albums                 ReviewedAlbum[]
     average_score          Float
     leaderboard_position   Int?
-}
-
-model Track {
-    id                     Int             @id @default(autoincrement())
-    name                   String
-    spotify_id             String          @unique
-    runtime                String
-    artists                String       //JSON object of array of names
-    album                  ReviewedAlbum?  @relation(fields: [album_id], references: [id])
-    album_id               Int
-    review_score           Float?
-
-    @@index([album_id])
 }
 
 model AccessToken {
@@ -61,13 +50,5 @@ model AccessToken {
     expires_in             Int
     created_at             Int?        
     updated_at             Int?        
-}
-
-model Test{
-  id                     Int             @id @default(autoincrement())
-  createdAt              DateTime        @default(now())
-  title                  String
-  age                    Int        
-  country                String  
 }
 
