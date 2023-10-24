@@ -15,7 +15,7 @@ export const Layout = (props: PropsWithChildren) => {
 const Navbar = () => {
   const router = useRouter();
 
-  // Define a function to determine if a link is active
+  //* Determine if a link is active
   const isActive = (href: string) => {
     if (href === "/" && router.pathname === "/") {
       return true;
@@ -26,7 +26,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className="flex h-[90px] w-full items-center justify-start gap-8 bg-gray-700 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-sm
+      className="flex h-[90px] w-full items-center justify-start gap-8 bg-gray-900 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-lg
     "
     >
       <Image src="/favicon.ico" alt="logo" width={50} height={50} priority />
@@ -36,6 +36,9 @@ const Navbar = () => {
         </NavLink>
         <NavLink href="/albums" isActive={isActive("/albums")}>
           Albums
+        </NavLink>
+        <NavLink href="/albums/new" isActive={isActive("/albums")}>
+          New
         </NavLink>
         <NavLink href="/artists" isActive={isActive("/artists")}>
           Artists
