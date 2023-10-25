@@ -1,4 +1,4 @@
-import { SpotifyAlbum } from "../types";
+import { type SpotifyAlbum } from "../types";
 
 export function formatDuration(durationMs: number, form: string): string {
   if (form === "short") {

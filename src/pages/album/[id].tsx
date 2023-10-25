@@ -1,25 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
 import { removeFeaturedArtist } from "~/helpers/dateFormat";
 import { formatDuration } from "~/helpers/durationConversion";
 import {
-  AlbumWithExtras,
-  RatingChipValues,
-  RatingValue,
-  ReviewedArtist,
-  ReviewedTrack,
-  ReviewedTrackArtist,
-  SpotifyAlbum,
-  SpotifyImage,
+  // type AlbumWithExtras,
+  type RatingChipValues,
+  // RatingValue,
+  // ReviewedArtist,
+  type ReviewedTrack,
+  type ReviewedTrackArtist,
+  // SpotifyAlbum,
+  type SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
 
 export default function AlbumDetail() {
-  const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
+  // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
   const [images, setImages] = useState<SpotifyImage[]>([]);
   const { token } = useTokenContext();
@@ -32,7 +32,7 @@ export default function AlbumDetail() {
 
   const {
     data: album,
-    isLoading,
+    // isLoading,
     isSuccess,
   } = api.spotify.getReviewById.useQuery(albumID);
 
@@ -41,6 +41,7 @@ export default function AlbumDetail() {
       setTracks(JSON.parse(album!.scored_tracks) as ReviewedTrack[]);
       setImages(JSON.parse(album!.image_urls) as SpotifyImage[]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
 
   return (
@@ -117,7 +118,7 @@ const ArtistProfile = (props: {
   token: string;
   artistName: string | undefined;
 }) => {
-  const [artistImageURL, setArtistImageURL] = useState("");
+  // const [artistImageURL, setArtistImageURL] = useState("");
 
   const {
     data: imageURL,

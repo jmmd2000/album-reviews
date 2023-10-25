@@ -1,5 +1,5 @@
 import {
-  ReactNode,
+  type ReactNode,
   useContext,
   useState,
   createContext,
@@ -31,14 +31,13 @@ export function TokenProvider({ children }: { children: ReactNode }) {
 
   // Fetches the access token to be used with queries.
   // Disabled by default, runs once on mount.
-  const { data: fetchedToken, refetch: retryFetch } =
-    api.spotify.fetchAccessToken.useQuery("", {
-      retry: false,
-      enabled: false,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    });
+  const { refetch: retryFetch } = api.spotify.fetchAccessToken.useQuery("", {
+    retry: false,
+    enabled: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   // useEffect(() => {
   //   console.log(
@@ -65,7 +64,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     // Fetches a new token and updates it in local storage and context
     async function fetchAndSetToken() {
       try {
-        const { data, isSuccess, isError } = await retryFetch();
+        const { data, isSuccess } = await retryFetch();
 
         if (isSuccess) {
           if (data?.access_token) {
@@ -118,6 +117,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
           console.log(error.message);
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateToken = (newValue: string) => {

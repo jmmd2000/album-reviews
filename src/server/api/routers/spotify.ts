@@ -6,7 +6,7 @@ import { getTotalDuration } from "~/helpers/durationConversion";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
-  AlbumReview,
+  // AlbumReview,
   type SpotifyAlbum,
   type SpotifyArtist,
   type SpotifySearchResponse,
@@ -16,45 +16,45 @@ import {
  -TODO: REMOVE NON-SPOTIFY API PROCEDURES AND PUT THEM IN A SEPARATE ROUTER.
 */
 
-const ReveiewedAlbumSchema = z.object({
-  artist_id: z.string(),
-  name: z.string(),
-  spotify_id: z.string(),
-  release_date: z.string(),
-  image_urls: z.string(),
-  best_song: z.string(),
-  worst_song: z.string(),
-  runtime: z.string(),
-  review: z.string(),
-  review_score: z.number(),
-  review_date: z.string(),
-});
+// const ReveiewedAlbumSchema = z.object({
+//   artist_id: z.string(),
+//   name: z.string(),
+//   spotify_id: z.string(),
+//   release_date: z.string(),
+//   image_urls: z.string(),
+//   best_song: z.string(),
+//   worst_song: z.string(),
+//   runtime: z.string(),
+//   review: z.string(),
+//   review_score: z.number(),
+//   review_date: z.string(),
+// });
 
-const ArtistSchema = z.object({
-  name: z.string(),
-  spotify_id: z.string(),
-  image_urls: z.string(),
-  average_score: z.number(),
-  leaderboard_position: z.number(),
-});
+// const ArtistSchema = z.object({
+//   name: z.string(),
+//   spotify_id: z.string(),
+//   image_urls: z.string(),
+//   average_score: z.number(),
+//   leaderboard_position: z.number(),
+// });
 
-const TrackSchema = z.object({
-  name: z.string(),
-  spotify_id: z.string(),
-  runtime: z.string(),
-  album_id: z.string(),
-  review_score: z.number(),
-  artists: z.object({
-    external_urls: z.object({
-      spotify: z.string(),
-    }),
-    href: z.string(),
-    id: z.string(),
-    name: z.string(),
-    type: z.string(),
-    uri: z.string(),
-  }),
-});
+// const TrackSchema = z.object({
+//   name: z.string(),
+//   spotify_id: z.string(),
+//   runtime: z.string(),
+//   album_id: z.string(),
+//   review_score: z.number(),
+//   artists: z.object({
+//     external_urls: z.object({
+//       spotify: z.string(),
+//     }),
+//     href: z.string(),
+//     id: z.string(),
+//     name: z.string(),
+//     type: z.string(),
+//     uri: z.string(),
+//   }),
+// });
 
 const ScoredTrackSchema = z.object({
   track_id: z.string(),

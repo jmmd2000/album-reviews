@@ -1,4 +1,4 @@
-import { RatingChipValues, RatingValue } from "~/types";
+import { type RatingChipValues } from "~/types";
 
 export const RatingCard = (props: {
   rating: RatingChipValues;

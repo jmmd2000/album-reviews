@@ -1,17 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
-import { removeFeaturedArtist } from "~/helpers/dateFormat";
-import { formatDuration } from "~/helpers/durationConversion";
+// import { removeFeaturedArtist } from "~/helpers/dateFormat";
+// import { formatDuration } from "~/helpers/durationConversion";
 import {
-  AlbumWithExtras,
-  RatingValue,
-  ReviewedTrack,
-  SpotifyAlbum,
-  SpotifyImage,
+  type AlbumWithExtras,
+  // RatingValue,
+  type ReviewedTrack,
+  // SpotifyAlbum,
+  // SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
 import { TrackCard } from "~/pages/album/[id]";
@@ -20,7 +20,7 @@ export default function NewAlbumForm() {
   // const [token, setToken] = useState("");
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
-  const [images, setImages] = useState<SpotifyImage[]>([]);
+  // const [images, setImages] = useState<SpotifyImage[]>([]);
   // const [artistID, setArtistID] = useState("");
   const { token } = useTokenContext();
   const router = useRouter();
@@ -37,6 +37,7 @@ export default function NewAlbumForm() {
       setTracks(JSON.parse(review!.scored_tracks) as ReviewedTrack[]);
       // setImages(JSON.parse(review!.image_urls) as SpotifyImage[]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewExists, checkingIfExists]);
 
   useEffect(() => {
@@ -44,9 +45,9 @@ export default function NewAlbumForm() {
   }, [albumID]);
 
   const {
-    data: albumInfo,
-    isLoading,
-    isSuccess,
+    // data: albumInfo,
+    // isLoading,
+    // isSuccess,
     refetch: fetchAlbumInfo,
   } = api.spotify.getAlbumDetails.useQuery(
     {
@@ -101,15 +102,16 @@ export default function NewAlbumForm() {
       .catch((error: Error) => {
         console.log(error.message);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, albumID]);
 
   const album = albumDetails?.album;
 
   const {
     mutate: createNewReview,
-    isLoading: loadingCreate,
-    isSuccess: successfulCreate,
-    isError: errorOnCreate,
+    // isLoading: loadingCreate,
+    // isSuccess: successfulCreate,
+    // isError: errorOnCreate,
   } = api.spotify.createAlbumReview.useMutation({
     onSuccess: (data) => {
       console.log("successful create", data);
@@ -121,9 +123,9 @@ export default function NewAlbumForm() {
 
   const {
     mutate: updateCurrentReview,
-    isLoading: loadingUpdate,
-    isSuccess: successfulUpdate,
-    isError: errorOnUpdate,
+    // isLoading: loadingUpdate,
+    // isSuccess: successfulUpdate,
+    // isError: errorOnUpdate,
   } = api.spotify.updateAlbumReview.useMutation({
     onSuccess: (data) => {
       console.log("successful update", data);
@@ -135,9 +137,9 @@ export default function NewAlbumForm() {
 
   const {
     mutate: deleteCurrentReview,
-    isLoading: loadingDelete,
-    isSuccess: successfulDelete,
-    isError: errorOnDelete,
+    // isLoading: loadingDelete,
+    // isSuccess: successfulDelete,
+    // isError: errorOnDelete,
   } = api.spotify.deleteAlbumReview.useMutation({
     onSuccess: (data) => {
       console.log("successful delete", data);
@@ -185,15 +187,15 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    const finalReview = {
-      album: album,
-      review_content: reviewContent,
-      best_song: bestSong,
-      worst_song: worstSong,
-      tracks: trackArray,
-      formatted_release_date: albumDetails?.formatted_release_date,
-      formatted_runtime: albumDetails?.formatted_runtime,
-    };
+    // const finalReview = {
+    //   album: album,
+    //   review_content: reviewContent,
+    //   best_song: bestSong,
+    //   worst_song: worstSong,
+    //   tracks: trackArray,
+    //   formatted_release_date: albumDetails?.formatted_release_date,
+    //   formatted_runtime: albumDetails?.formatted_runtime,
+    // };
 
     createNewReview({
       album: album!,
@@ -245,13 +247,13 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    const finalReview = {
-      review_content: reviewContent,
-      best_song: bestSong,
-      worst_song: worstSong,
-      tracks: trackArray,
-      artist_id: review?.artist.spotify_id,
-    };
+    // const finalReview = {
+    //   review_content: reviewContent,
+    //   best_song: bestSong,
+    //   worst_song: worstSong,
+    //   tracks: trackArray,
+    //   artist_id: review?.artist.spotify_id,
+    // };
 
     updateCurrentReview({
       review_content: reviewContent,
@@ -377,7 +379,7 @@ const ArtistProfile = (props: {
   token: string;
   artistName: string | undefined;
 }) => {
-  const [artistImageURL, setArtistImageURL] = useState("");
+  // const [artistImageURL, setArtistImageURL] = useState("");
 
   const {
     data: imageURL,

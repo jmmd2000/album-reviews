@@ -1,47 +1,46 @@
 /* eslint-disable @next/next/no-img-element */
-import { ReviewedAlbum } from "@prisma/client";
-import Head from "next/head";
-import Image from "next/image";
+// import { ReviewedAlbum } from "@prisma/client";
+// import Head from "next/head";
+// import Image from "next/image";
 import Link from "next/link";
-import { env } from "~/env.mjs";
+// import { env } from "~/env.mjs";
 
-import { RouterOutputs, api } from "~/utils/api";
-import { getAccessToken } from "~/server/spotify";
-import { JSX, use, useEffect, useState } from "react";
+import { api } from "~/utils/api";
+// import { getAccessToken } from "~/server/spotify";
+import { useState } from "react";
 import {
-  AlbumReview,
-  SpotifyAlbum,
-  SpotifyImage,
-  SpotifySearchResponse,
+  type AlbumReview,
+  type SpotifyAlbum,
+  type SpotifyImage,
+  // SpotifySearchResponse,
 } from "src/types";
-import { set, z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+// import { set, z } from "zod";
+// import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
-import { type } from "os";
+// import { type } from "os";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const { token, updateToken } = useTokenContext();
+  const { token } = useTokenContext();
 
   //* Queries Spotify with a search term. Disabled by default, runs on button click.
-  const { data: albumSearchResults, refetch: refetchResults } =
-    api.spotify.searchAlbums.useQuery(
-      {
-        query: inputValue,
-        accessToken: token,
-      },
-      {
-        enabled: false,
-        retry: false,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-      },
-    );
+  const { refetch: refetchResults } = api.spotify.searchAlbums.useQuery(
+    {
+      query: inputValue,
+      accessToken: token,
+    },
+    {
+      enabled: false,
+      retry: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    },
+  );
 
   // const { data } = api.spotify.getAll.useQuery();
   // console.log(data);

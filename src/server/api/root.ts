@@ -1,4 +1,4 @@
-import { albumRouter } from "~/server/api/routers/album";
+// import { albumRouter } from "~/server/api/routers/album";
 import { createTRPCRouter } from "~/server/api/trpc";
 import { artistRouter } from "./routers/artist";
 import { spotifyRouter } from "./routers/spotify";
@@ -9,7 +9,7 @@ import { spotifyRouter } from "./routers/spotify";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  album: albumRouter,
+  // album: albumRouter,
   artist: artistRouter,
   spotify: spotifyRouter,
 });

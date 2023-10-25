@@ -1,7 +1,7 @@
 import { api } from "~/utils/api";
 import { AlbumGrid } from "./new/index";
 import { Loader } from "~/components/Loader";
-import { AlbumReview } from "~/types";
+import { type AlbumReview } from "~/types";
 import { useEffect, useState } from "react";
 
 export default function AlbumsPage() {
@@ -18,6 +18,7 @@ export default function AlbumsPage() {
     if (isSuccess) {
       setReviews(albumReviews as AlbumReview[]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
 
   // const {
