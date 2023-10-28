@@ -3,6 +3,8 @@ import { AlbumGrid } from "./new/index";
 import { Loader } from "~/components/Loader";
 import { type AlbumReview } from "~/types";
 import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AlbumsPage() {
   const [reviews, setReviews] = useState<AlbumReview[]>([]);
@@ -18,8 +20,16 @@ export default function AlbumsPage() {
     if (isSuccess) {
       setReviews(albumReviews as AlbumReview[]);
     }
+
+    if (isError) {
+      toast.error("Error fetching albums.", {
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess]);
+  }, [isSuccess, isError]);
 
   // const {
   //   data,
@@ -31,32 +41,8 @@ export default function AlbumsPage() {
     console.log(albumReviews);
   }
 
-  // if (success) {
-  //   console.log(data);
-  // }
-
   return (
     <div className="m-10">
-      <div className="flex flex-row gap-2">
-        <input
-          type="text"
-          className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#D2D2D3]"
-          // onChange={(e) => setInputValue(e.target.value)}
-          // onKeyDown={(e) => {
-          //   if (e.key === "Enter") {
-          //     e.preventDefault();
-          //     handleClick();
-          //   }
-          // }}
-          placeholder="Filter by album name, artist or year..."
-        />
-        <button
-          className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-          // onClick={handleClick}
-        >
-          Submit
-        </button>
-      </div>
       {/* {
         // If there are search results, render them.
         searchResults.length !== 0 ? (
@@ -86,6 +72,19 @@ export default function AlbumsPage() {
           Error fetching albums :(
         </h2>
       ) : null}
+      <ToastContainer
+        toastStyle={{
+          // same as bg-gray-700 bg-opacity-10
+          background: "rgba(55, 65, 81, 0.1)",
+          color: "#D2D2D3",
+          borderRadius: "0.375rem",
+          backdropFilter: "blur(10px)",
+        }}
+        progressStyle={{
+          borderRadius: "0.375rem",
+        }}
+        position="top-right"
+      />
     </div>
   );
 }

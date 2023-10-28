@@ -1,17 +1,23 @@
+//! This file is actually disgusting, held together with duct tape and paperclips.
+//- URGENTLY needs a tidy up and refactor.
+
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
-// import { removeFeaturedArtist } from "~/helpers/dateFormat";
-// import { formatDuration } from "~/helpers/durationConversion";
+import { removeFeaturedArtist } from "~/helpers/dateFormat";
+import { formatDuration } from "~/helpers/durationConversion";
+import { Id, toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
-  type AlbumWithExtras,
-  // RatingValue,
-  type ReviewedTrack,
-  // SpotifyAlbum,
-  // SpotifyImage,
+  AlbumWithExtras,
+  RatingValue,
+  ReviewedTrack,
+  SpotifyAlbum,
+  SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
 import { TrackCard } from "~/pages/album/[id]";
@@ -20,11 +26,14 @@ export default function NewAlbumForm() {
   // const [token, setToken] = useState("");
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
-  // const [images, setImages] = useState<SpotifyImage[]>([]);
+  const [images, setImages] = useState<SpotifyImage[]>([]);
   // const [artistID, setArtistID] = useState("");
   const { token } = useTokenContext();
   const router = useRouter();
   const albumID = router.query.id as string;
+  let creatingToast: Id | null = null;
+  let updatingToast: Id | null = null;
+  let deletingToast: Id | null = null;
 
   const {
     data: review,
@@ -33,11 +42,15 @@ export default function NewAlbumForm() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
+    console.log("review", review);
+    console.log("isLoading", isLoading);
+    console.log("reviewExists", reviewExists);
     if (reviewExists) {
-      setTracks(JSON.parse(review!.scored_tracks) as ReviewedTrack[]);
+      if (review?.scored_tracks) {
+        setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
+      }
       // setImages(JSON.parse(review!.image_urls) as SpotifyImage[]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewExists, checkingIfExists]);
 
   useEffect(() => {
@@ -45,9 +58,9 @@ export default function NewAlbumForm() {
   }, [albumID]);
 
   const {
-    // data: albumInfo,
-    // isLoading,
-    // isSuccess,
+    data: albumInfo,
+    isLoading,
+    isSuccess,
     refetch: fetchAlbumInfo,
   } = api.spotify.getAlbumDetails.useQuery(
     {
@@ -83,9 +96,19 @@ export default function NewAlbumForm() {
 
         //* If there is an error, throw it.
         if (isError) {
+          toast.error("Error fetching album data.", {
+            progressStyle: {
+              backgroundColor: "#DC2626",
+            },
+          });
           throw new Error("Error fetching album data.");
         }
       } else {
+        toast.error("No access token.", {
+          progressStyle: {
+            backgroundColor: "#DC2626",
+          },
+        });
         throw new Error("No access token.");
       }
     }
@@ -102,52 +125,117 @@ export default function NewAlbumForm() {
       .catch((error: Error) => {
         console.log(error.message);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, albumID]);
 
   const album = albumDetails?.album;
 
   const {
     mutate: createNewReview,
-    // isLoading: loadingCreate,
-    // isSuccess: successfulCreate,
-    // isError: errorOnCreate,
+    isLoading: loadingCreate,
+    isSuccess: successfulCreate,
+    isError: errorOnCreate,
   } = api.spotify.createAlbumReview.useMutation({
-    onSuccess: (data) => {
-      console.log("successful create", data);
+    onSuccess: () => {
+      // console.log("successful create", data);
+      toast.update(creatingToast!, {
+        render: "Review created successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#059669",
+        },
+      });
     },
-    onError: (error) => {
-      console.log("error on create", error);
+    onError: () => {
+      // console.log("error on create", error);
+      toast.update(creatingToast!, {
+        render: "Error creating review.",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
+      });
     },
   });
 
   const {
     mutate: updateCurrentReview,
-    // isLoading: loadingUpdate,
-    // isSuccess: successfulUpdate,
-    // isError: errorOnUpdate,
+    isLoading: loadingUpdate,
+    isSuccess: successfulUpdate,
+    isError: errorOnUpdate,
   } = api.spotify.updateAlbumReview.useMutation({
-    onSuccess: (data) => {
-      console.log("successful update", data);
+    onSuccess: () => {
+      toast.update(updatingToast!, {
+        render: "Review updated successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#059669",
+        },
+      });
     },
-    onError: (error) => {
-      console.log("error on update", error);
+    onError: () => {
+      toast.update(updatingToast!, {
+        render: "Error updating review.",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
+      });
     },
   });
 
   const {
     mutate: deleteCurrentReview,
-    // isLoading: loadingDelete,
-    // isSuccess: successfulDelete,
-    // isError: errorOnDelete,
+    isLoading: loadingDelete,
+    isSuccess: successfulDelete,
+    isError: errorOnDelete,
   } = api.spotify.deleteAlbumReview.useMutation({
-    onSuccess: (data) => {
-      console.log("successful delete", data);
+    onSuccess: () => {
+      toast.update(deletingToast!, {
+        render: "Review deleted successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#059669",
+        },
+      });
     },
-    onError: (error) => {
-      console.log("error on delete", error);
+    onError: () => {
+      toast.update(creatingToast!, {
+        render: "Error deleting review.",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
+      });
     },
   });
+
+  //! This is not the proper way to manage these updates
+  //- Fix this later
+  useEffect(() => {
+    if (loadingUpdate) {
+      updatingToast = toast.loading("Updating review...", {});
+    }
+
+    if (loadingCreate) {
+      creatingToast = toast.loading("Creating review...", {});
+    }
+
+    if (loadingDelete) {
+      deletingToast = toast.loading("Deleting review...", {});
+    }
+  }, [loadingCreate, loadingUpdate, loadingDelete]);
 
   const createReview = () => {
     const reviewInput = document.getElementById(
@@ -187,15 +275,15 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    // const finalReview = {
-    //   album: album,
-    //   review_content: reviewContent,
-    //   best_song: bestSong,
-    //   worst_song: worstSong,
-    //   tracks: trackArray,
-    //   formatted_release_date: albumDetails?.formatted_release_date,
-    //   formatted_runtime: albumDetails?.formatted_runtime,
-    // };
+    const finalReview = {
+      album: album,
+      review_content: reviewContent,
+      best_song: bestSong,
+      worst_song: worstSong,
+      tracks: trackArray,
+      formatted_release_date: albumDetails?.formatted_release_date,
+      formatted_runtime: albumDetails?.formatted_runtime,
+    };
 
     createNewReview({
       album: album!,
@@ -247,13 +335,13 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    // const finalReview = {
-    //   review_content: reviewContent,
-    //   best_song: bestSong,
-    //   worst_song: worstSong,
-    //   tracks: trackArray,
-    //   artist_id: review?.artist.spotify_id,
-    // };
+    const finalReview = {
+      review_content: reviewContent,
+      best_song: bestSong,
+      worst_song: worstSong,
+      tracks: trackArray,
+      artist_id: review?.artist.spotify_id,
+    };
 
     updateCurrentReview({
       review_content: reviewContent,
@@ -273,104 +361,121 @@ export default function NewAlbumForm() {
   };
 
   return (
-    <div className="mx-auto mt-12 flex w-[80%] flex-col items-center">
-      {album === undefined ? (
-        <Loader />
-      ) : (
-        <div className="flex max-h-[250px] w-[80%] items-center justify-start gap-12">
-          <img
-            src={album?.images[1]?.url}
-            alt={album?.name}
-            className="aspect-square w-[250px]"
-          />
-          <div className="mt-8 flex flex-col gap-4">
-            <h1 className="text-3xl font-bold text-white">{album?.name}</h1>
-
-            <ArtistProfile
-              artistID={album.artists[0]?.id}
-              token={token}
-              artistName={album?.artists[0]?.name}
+    <>
+      <div className="mx-auto mt-12 flex w-[70%] flex-col items-center">
+        {album === undefined ? (
+          <Loader />
+        ) : (
+          <div className="flex max-h-[250px] w-[80%] items-center justify-start gap-12">
+            <img
+              src={album?.images[1]?.url}
+              alt={album?.name}
+              className="aspect-square w-[250px]"
             />
-            <div className="relative mt-4">
-              <p className="text-base text-gray-500">
-                {album?.total_tracks + " tracks"}
-              </p>
-              <p className="text-base text-gray-500">
-                {albumDetails?.formatted_runtime}
-              </p>
-              <p className="text-base text-gray-500">
-                {albumDetails?.formatted_release_date}
-              </p>
+            <div className="mt-8 flex flex-col gap-4">
+              <h1 className="text-3xl font-bold text-white">{album?.name}</h1>
+
+              <ArtistProfile
+                artistID={album.artists[0]?.id}
+                token={token}
+                artistName={album?.artists[0]?.name}
+              />
+              <div className="relative mt-4">
+                <p className="text-base text-gray-500">
+                  {album?.total_tracks + " tracks"}
+                </p>
+                <p className="text-base text-gray-500">
+                  {albumDetails?.formatted_runtime}
+                </p>
+                <p className="text-base text-gray-500">
+                  {albumDetails?.formatted_release_date}
+                </p>
+              </div>
             </div>
+            {review !== null && review !== undefined && (
+              <RatingChip ratingNumber={review.review_score!} form="label" />
+            )}
           </div>
-          <RatingChip ratingNumber={100} form="label" />
+        )}
+
+        <ReviewContentInput
+          name="review_content"
+          id="review_content"
+          value={review?.review_content ?? ""}
+        />
+
+        <BestWorstInput
+          name="best"
+          bestID="best"
+          worstID="worst"
+          bestValue={review?.best_song ?? ""}
+          worstValue={review?.worst_song ?? ""}
+        />
+        <div className="mt-8 flex w-[80%] flex-col gap-2">
+          {/*//* If a review exists, use the tracks from that review so we can get the scores */}
+          {review === null
+            ? album?.tracks.items.map((track, index) => (
+                <TrackCard
+                  key={track.id}
+                  trackNumber={index}
+                  name={track.name}
+                  artists={track.artists}
+                  duration={track.duration_ms}
+                  trackID={track.id}
+                  select
+                />
+              ))
+            : tracks.map((track, index) => (
+                <TrackCard
+                  key={track.track_id}
+                  trackNumber={index}
+                  name={track.track_name}
+                  artists={track.track_artist}
+                  duration={track.track_duration}
+                  trackID={track.track_id}
+                  rating={track.rating}
+                  select
+                />
+              ))}
         </div>
-      )}
-
-      <ReviewContentInput
-        name="review_content"
-        id="review_content"
-        value={review?.review_content ?? ""}
-      />
-
-      <BestWorstInput
-        name="best"
-        bestID="best"
-        worstID="worst"
-        bestValue={review?.best_song ?? ""}
-        worstValue={review?.worst_song ?? ""}
-      />
-      <div className="mt-8 flex w-[80%] flex-col gap-2">
-        {/*//* If a review exists, use the tracks from that review so we can get the scores */}
-        {!reviewExists
-          ? album?.tracks.items.map((track, index) => (
-              <TrackCard
-                key={track.id}
-                trackNumber={index}
-                name={track.name}
-                artists={track.artists}
-                duration={track.duration_ms}
-                trackID={track.id}
-                select
-              />
-            ))
-          : tracks.map((track, index) => (
-              <TrackCard
-                key={track.track_id}
-                trackNumber={index}
-                name={track.track_name}
-                artists={track.track_artist}
-                duration={track.track_duration}
-                trackID={track.track_id}
-                rating={track.rating}
-                select
-              />
-            ))}
-      </div>
-      {reviewExists ? (
-        <div className="flex gap-4">
+        {review ? (
+          <div className="flex gap-4">
+            <button
+              className="my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+              onClick={updateReview}
+            >
+              Update
+            </button>
+            <button
+              className="my-8 rounded-md border border-[#551d1d] bg-red-800  bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-red-600"
+              onClick={deleteReview}
+            >
+              Delete
+            </button>
+          </div>
+        ) : (
           <button
             className="my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-            onClick={updateReview}
+            onClick={createReview}
           >
-            Update
+            {checkingIfExists ? <Loader /> : "Submit"}
           </button>
-          <button
-            className="my-8 rounded-md border border-[#551d1d] bg-red-800  bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-red-600"
-            onClick={deleteReview}
-          >
-            Delete
-          </button>
-        </div>
-      ) : (
-        <button
-          className="my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-          onClick={createReview}
-        >
-          {checkingIfExists ? <Loader /> : "Submit"}
-        </button>
-      )}
-    </div>
+        )}
+      </div>
+      <ToastContainer
+        toastStyle={{
+          // same as bg-gray-700 bg-opacity-10
+          background: "rgba(55, 65, 81, 0.1)",
+          color: "#D2D2D3",
+          borderRadius: "0.375rem",
+          backdropFilter: "blur(10px)",
+        }}
+        progressStyle={{
+          borderRadius: "0.375rem",
+        }}
+        position="bottom-center"
+      />
+    </>
   );
 }
 
@@ -379,7 +484,7 @@ const ArtistProfile = (props: {
   token: string;
   artistName: string | undefined;
 }) => {
-  // const [artistImageURL, setArtistImageURL] = useState("");
+  const [artistImageURL, setArtistImageURL] = useState("");
 
   const {
     data: imageURL,

@@ -17,6 +17,9 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: {
+    domains: ["i.scdn.co"], // Spotify album art
+  },
 };
 
 export default config;

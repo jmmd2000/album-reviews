@@ -37,9 +37,9 @@ const Navbar = () => {
         <NavLink href="/albums" isActive={isActive("/albums")}>
           Albums
         </NavLink>
-        <NavLink href="/albums/new" isActive={isActive("/albums")}>
+        {/* <NavLink href="/albums/new" isActive={isActive("/albums")}>
           New
-        </NavLink>
+        </NavLink> */}
         <NavLink href="/artists" isActive={isActive("/artists")}>
           Artists
         </NavLink>

@@ -320,7 +320,12 @@ export const spotifyRouter = createTRPCRouter({
         where: {
           spotify_id: input.album.artists[0]!.id,
         },
+        include: {
+          albums: true,
+        },
       });
+
+      console.log(input.album.artists[0]!.id, "input.album.artists[0]!.id");
 
       let artistData = null;
       let createdArtist = null;
@@ -363,6 +368,41 @@ export const spotifyRouter = createTRPCRouter({
             console.log(err, "ERROR IN CREATE ARTIST");
           }
         }
+      } else {
+        console.log("ARTIST ALREADY EXISTS");
+        console.log(roundedScore, "ROUNDED SCORE");
+        let newAverageScore = roundedScore;
+        console.log(newAverageScore, "newAverageScore in create 375");
+
+        console.log(foundArtist, "FOUND ARTIST");
+        if (foundArtist) {
+          console.log(foundArtist?.albums, "FOUND ARTIST ALBUMS");
+          for (const album of foundArtist?.albums) {
+            newAverageScore += album.review_score!;
+            console.log(newAverageScore, "newAverageScore in create");
+          }
+          console.log(newAverageScore, "newAverageScore in create");
+          newAverageScore = newAverageScore / (foundArtist?.albums.length + 1);
+          console.log(
+            newAverageScore,
+            "/",
+            foundArtist?.albums.length + 1,
+            "=",
+            newAverageScore / (foundArtist?.albums.length + 1),
+            "newAverageScore in create",
+          );
+        }
+
+        const updatedArtist = await ctx.prisma.artist.update({
+          where: {
+            spotify_id: foundArtist.spotify_id,
+          },
+          data: {
+            average_score: newAverageScore,
+          },
+        });
+
+        console.log(updatedArtist, "UPDATED ARTIST");
       }
 
       let finalArtist = null;
@@ -446,11 +486,22 @@ export const spotifyRouter = createTRPCRouter({
       });
       let newAverageScore = 0;
 
+      console.log(foundArtist, "FOUND ARTIST");
       if (foundArtist) {
+        console.log(foundArtist?.albums, "FOUND ARTIST ALBUMS");
         for (const album of foundArtist?.albums) {
           newAverageScore += album.review_score!;
+          console.log(newAverageScore, "newAverageScore in update");
         }
         newAverageScore = newAverageScore / foundArtist?.albums.length;
+        console.log(
+          newAverageScore,
+          "/",
+          foundArtist?.albums.length,
+          "=",
+          newAverageScore / foundArtist?.albums.length,
+          "newAverageScore in update",
+        );
       }
 
       const updatedArtist = await ctx.prisma.artist.update({
@@ -535,8 +586,17 @@ export const spotifyRouter = createTRPCRouter({
         } else {
           for (const album of foundArtist?.albums) {
             newAverageScore += album.review_score!;
+            console.log(newAverageScore, "newAverageScore in delete");
           }
           newAverageScore = newAverageScore / foundArtist?.albums.length;
+          console.log(
+            newAverageScore,
+            "/",
+            foundArtist?.albums.length,
+            "=",
+            newAverageScore / foundArtist?.albums.length,
+            "newAverageScore in delete",
+          );
           const updatedArtist = await ctx.prisma.artist.update({
             where: {
               spotify_id: input.artist_spotify_id,
@@ -575,8 +635,12 @@ export const spotifyRouter = createTRPCRouter({
   }),
 
   getAllArtists: publicProcedure.query(({ ctx }) => {
-    const reviews = ctx.prisma.artist.findMany();
-    return reviews;
+    const artists = ctx.prisma.artist.findMany({
+      include: {
+        albums: true,
+      },
+    });
+    return artists;
   }),
 });
 

@@ -51,31 +51,39 @@ export default function Home() {
         <div className="relative m-12 grid max-h-max max-w-max grid-cols-2 items-center justify-center">
           <div className="absolute h-full w-full bg-gradient-to-r from-zinc-900 via-transparent"></div>
           <div className="max-h-max max-w-max">
-            <img
+            <Image
               src="https://i.scdn.co/image/ab6761610000f1786be070445b03e0b63147c2c1"
               alt=""
               className="h-80 w-80"
+              height={320}
+              width={320}
             />
           </div>
           <div className="max-h-max max-w-max">
-            <img
+            <Image
               src="https://i.scdn.co/image/ab6761610000f178d8b9980db67272cb4d2c3daf"
               alt=""
               className="h-80 w-80"
+              height={320}
+              width={320}
             />
           </div>
           <div className="max-h-max max-w-max">
-            <img
+            <Image
               src="https://i.scdn.co/image/ab6761610000f178ea7538654040e553a7b0fc28"
               alt=""
               className="h-80 w-80"
+              height={320}
+              width={320}
             />
           </div>
           <div className="max-h-max max-w-max">
-            <img
+            <Image
               src="https://i.scdn.co/image/ab6761610000f178207b21f3ed0ee96adce3166a"
               alt=""
               className="h-80 w-80"
+              height={320}
+              width={320}
             />
           </div>
         </div>

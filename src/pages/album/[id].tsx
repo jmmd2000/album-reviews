@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
@@ -17,6 +17,7 @@ import {
   type SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -37,6 +38,7 @@ export default function AlbumDetail() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
+    console.log("album", album);
     if (isSuccess) {
       setTracks(JSON.parse(album!.scored_tracks) as ReviewedTrack[]);
       setImages(JSON.parse(album!.image_urls) as SpotifyImage[]);
@@ -59,9 +61,9 @@ export default function AlbumDetail() {
             <h1 className="text-3xl font-bold text-white">{album?.name}</h1>
 
             <ArtistProfile
-              artistID={album?.artist.spotify_id}
-              token={token}
+              image_url={album?.artist.image_urls}
               artistName={album?.artist.name}
+              artistID={album?.artist.spotify_id}
             />
             <div className="relative mt-4">
               <p className="text-base text-gray-500">
@@ -114,42 +116,59 @@ export default function AlbumDetail() {
 //! This queries the Spotify API for the artist image even though we already have it in the database
 //- FIX THIS
 const ArtistProfile = (props: {
-  artistID: string | undefined;
-  token: string;
+  artistID?: string | undefined;
+  token?: string;
+  image_url?: string;
   artistName: string | undefined;
 }) => {
-  // const [artistImageURL, setArtistImageURL] = useState("");
+  const [artistImageURL, setArtistImageURL] = useState("");
 
-  const {
-    data: imageURL,
-    isLoading,
-    isSuccess,
-  } = api.spotify.getArtistImageFromSpotify.useQuery({
-    id: props.artistID!,
-    accessToken: props.token,
-  });
+  useEffect(() => {
+    if (props.artistID && props.token) {
+      const {
+        data: imageURL,
+        isLoading,
+        isSuccess,
+      } = api.spotify.getArtistImageFromSpotify.useQuery({
+        id: props.artistID,
+        accessToken: props.token,
+      });
 
-  if (isLoading) {
-    console.log("loading url");
-  }
+      if (isLoading) {
+        console.log("loading url");
+      }
 
-  if (isSuccess && imageURL) {
-    // console.log("imageURL", imageURL);
-    // setArtistImageURL(imageURL);
-  }
+      if (isSuccess && imageURL) {
+        setArtistImageURL(imageURL);
+      }
+    } else if (props.image_url) {
+      const urls = JSON.parse(props.image_url) as SpotifyImage[];
+      setArtistImageURL(urls[2]!.url);
+    }
+  }, [props.artistID, props.image_url, props.token]);
 
   return (
     <div className="flex items-center gap-2">
-      {imageURL ? (
+      {artistImageURL ? (
         <img
-          src={imageURL}
+          src={artistImageURL}
           alt={props.artistName}
           className="aspect-square w-[35px]"
         />
       ) : (
         <Loader />
       )}
-      <p className="font-base text-md text-gray-300">{props.artistName}</p>
+
+      {props.image_url ? (
+        <Link
+          href={`/artist/${props.artistID}`}
+          className="font-base text-md text-gray-300 hover:underline"
+        >
+          {props.artistName}
+        </Link>
+      ) : (
+        <p className="font-base text-md text-gray-300">{props.artistName}</p>
+      )}
     </div>
   );
 };

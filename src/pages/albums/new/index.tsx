@@ -3,11 +3,12 @@
 // import Head from "next/head";
 // import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 // import { env } from "~/env.mjs";
 
 import { api } from "~/utils/api";
 // import { getAccessToken } from "~/server/spotify";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   type AlbumReview,
   type SpotifyAlbum,
@@ -19,6 +20,9 @@ import {
 import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
+import { set } from "zod";
+import { placeholderImage64 } from "~/helpers/dateFormat";
+import ResponsiveImage from "~/components/ResponsiveImage";
 // import { type } from "os";
 
 export default function NewAlbumPage() {
@@ -194,9 +198,9 @@ const AlbumCard = (props: {
   return (
     <Link href={href}>
       <div className="relative mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
-        <img
-          src={props.image_url}
-          alt="Album cover"
+        <ResponsiveImage
+          src={props.image_url!}
+          alt={`Photo of ${props.name}`}
           className="aspect-square transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 xl:h-52"
         />
         <div className="mb-1 mt-2 flex w-full flex-col items-start ">
@@ -228,39 +232,165 @@ interface AlbumGridProps {
   reviewedAlbums?: AlbumReview[];
 }
 
-// type AlbumReview = RouterOutputs["album"]["getAll"][number];
 export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   const { searchedAlbums, reviewedAlbums } = props;
-  // const artistData = api.artist.getByID.useQuery({ id: props.artists[0]!.id });
-  // const artist = artistData.data;
-  // console.log(artistData);
+  const [albumGroup, setAlbumGroup] = useState<SpotifyAlbum[] | AlbumReview[]>(
+    [],
+  );
 
-  let albumGroup: SpotifyAlbum[] | AlbumReview[] = [];
+  useEffect(() => {
+    //* Only show "albums" and "compilations" from Spotify, not "singles" etc.
+    if (searchedAlbums) {
+      const filteredAlbums = searchedAlbums.filter(
+        (album) =>
+          album.album_type === "album" || album.album_type === "compilation",
+      );
+      setAlbumGroup(filteredAlbums);
+    } else if (reviewedAlbums) {
+      setAlbumGroup(reviewedAlbums);
+    }
+  }, [searchedAlbums, reviewedAlbums]);
 
-  if (searchedAlbums) {
-    //* Filters out singles and EPs.
-    const filteredAlbums = searchedAlbums.filter(
-      (album) =>
-        album.album_type === "album" || album.album_type === "compilation",
+  const filterAlbums = (filterText: string) => {
+    //* This can only be called from the select, which only shows when albumGroup is AlbumReview[]. We can safely assume everything is AlbumReview[].
+    const filteredAlbums: AlbumReview[] = (albumGroup as AlbumReview[]).filter(
+      (album) => {
+        const { name, artist, release_year } = album;
+        return (
+          name.toLowerCase().includes(filterText.toLowerCase()) ||
+          artist.name.toLowerCase().includes(filterText.toLowerCase()) ||
+          release_year.toString().includes(filterText)
+        );
+      },
     );
-    albumGroup = filteredAlbums;
-    console.log(filteredAlbums, "filtered");
-  } else if (reviewedAlbums) {
-    albumGroup = reviewedAlbums;
-    console.log(reviewedAlbums, "reviewed");
-  }
+
+    return filteredAlbums;
+  };
+
+  const sortAlbums = (sort: string) => {
+    //* This can only be called from the select, which only shows when albumGroup is AlbumReview[]. We can safely assume everything is AlbumReview[].
+    let sortedAlbums: AlbumReview[] = [...(albumGroup as AlbumReview[])];
+
+    switch (sort) {
+      case "all":
+        sortedAlbums = reviewedAlbums!;
+        break;
+      case "album-az":
+        sortedAlbums = sortedAlbums.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        break;
+      case "album-za":
+        sortedAlbums = sortedAlbums.sort((a, b) =>
+          b.name.localeCompare(a.name),
+        );
+        break;
+      case "score-asc":
+        sortedAlbums = sortedAlbums.sort(
+          (a, b) => a.review_score - b.review_score,
+        );
+        break;
+      case "score-desc":
+        sortedAlbums = sortedAlbums.sort(
+          (a, b) => b.review_score - a.review_score,
+        );
+        break;
+      case "year-asc":
+        sortedAlbums = sortedAlbums.sort(
+          (a, b) => a.release_year - b.release_year,
+        );
+        break;
+      case "year-desc":
+        sortedAlbums = sortedAlbums.sort(
+          (a, b) => b.release_year - a.release_year,
+        );
+        break;
+      default:
+        sortedAlbums = reviewedAlbums!;
+    }
+
+    setAlbumGroup(sortedAlbums);
+  };
 
   //! Really janky way to pass in the values
   //- TODO: Improve this
   return (
-    <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7">
-      {albumGroup.length !== 0
-        ? albumGroup.map((album) => albumTypeCheck(album))
-        : null}
-    </div>
+    <>
+      {reviewedAlbums && (
+        <div className="flex flex-row gap-2">
+          <input
+            type="text"
+            className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#d2d2d3a8]"
+            placeholder="Filter by album name, artist or year..."
+            onChange={(e) => {
+              const filterText = e.target.value;
+              if (filterText.length === 0) {
+                setAlbumGroup(reviewedAlbums);
+              } else {
+                const filteredAlbums = filterAlbums(filterText);
+                setAlbumGroup(filteredAlbums);
+              }
+            }}
+          />
+          <select
+            className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition "
+            onChange={(e) => sortAlbums(e.target.value)}
+          >
+            <option
+              value="all"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              All
+            </option>
+            <option
+              value="album-az"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Album A-Z
+            </option>
+            <option
+              value="album-za"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Album Z-A
+            </option>
+            <option
+              value="score-asc"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Score asc.
+            </option>
+            <option
+              value="score-desc"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Score desc.
+            </option>
+            <option
+              value="year-asc"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Year asc.
+            </option>
+            <option
+              value="year-desc"
+              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+            >
+              Year desc.
+            </option>
+          </select>
+        </div>
+      )}
+      <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7">
+        {albumGroup.length !== 0
+          ? albumGroup.map((album) => albumTypeCheck(album))
+          : null}
+      </div>
+    </>
   );
 };
 
+//* Check if its a SpotifyAlbum or AlbumReview (if its from Spotify or from the database).
 function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
   if (album.hasOwnProperty("album_type")) {
     const spotifyAlbum = album as SpotifyAlbum;
@@ -270,7 +400,7 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
         key={spotifyAlbum.id}
         name={spotifyAlbum.name}
         release_date={spotifyAlbum.release_date}
-        image_url={spotifyAlbum.images[0]?.url}
+        image_url={spotifyAlbum.images[1]?.url}
         artist={{
           name: spotifyAlbum.artists[0]?.name,
           spotify_id: spotifyAlbum.artists[0]?.id,
@@ -286,7 +416,7 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
         key={albumReview.spotify_id}
         name={albumReview.name}
         release_year={albumReview.release_year}
-        image_url={imageURL[0]?.url}
+        image_url={imageURL[1]?.url}
         artist={{
           name: albumReview.artist.name,
           spotify_id: albumReview.artist.spotify_id,
