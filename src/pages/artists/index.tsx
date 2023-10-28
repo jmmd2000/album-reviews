@@ -46,7 +46,7 @@ export default function ArtistsPage() {
   }
 
   return (
-    <div className="m-10">
+    <div className="m-2 xl:m-10">
       {/* {
         // If there are search results, render them.
         searchResults.length !== 0 ? (
@@ -165,7 +165,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
         <div className="flex flex-row gap-2">
           <input
             type="text"
-            className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#d2d2d3a8]"
+            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] xl:w-80"
             placeholder="Filter by artist name..."
             onChange={(e) => {
               const filterText = e.target.value;
@@ -178,7 +178,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
             }}
           />
           <select
-            className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition "
+            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition xl:w-36 "
             onChange={(e) => sortArtists(e.target.value)}
           >
             <option
@@ -226,7 +226,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
           </select>
         </div>
       )}
-      <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7">
+      <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {reviewedArtists.map((artist) => (
           <ArtistCard
             spotify_id={artist.spotify_id}
@@ -265,23 +265,26 @@ const ArtistCard = (props: {
 
   return (
     <Link href={`/artist/${props.spotify_id}`}>
-      <div className="relative mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
+      <div className="relative mt-5 flex max-h-max flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 xl:w-full">
         <ResponsiveImage
           src={image_url}
           alt={`Photo of ${props.name}`}
-          className="aspect-square transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 xl:h-52"
+          className="aspect-square max-h-[154px] transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
         />
-        <div className="mb-1 mt-2 flex w-full flex-col items-start ">
+        <div className="mb-1 mt-2 flex w-full flex-col items-start sm:w-44 ">
           <p
             className={
-              "mb-1 text-base font-medium text-white " + scrollAnimation
+              "mb-1 text-sm font-medium text-white xl:text-base " +
+              scrollAnimation
             }
           >
             {props.name}
           </p>
           <div className="mt-1 flex items-center gap-1">
             <p className="text-xs font-medium text-[#717171]">
-              {props.num_albums} reviews
+              {props.num_albums === 1
+                ? "1 review"
+                : props.num_albums + " reviews"}
             </p>
             <p className="text-xs font-medium text-[#717171]">-</p>
             <p className="text-xs font-medium text-[#717171]">

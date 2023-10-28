@@ -47,18 +47,20 @@ export default function AlbumDetail() {
   }, [isSuccess]);
 
   return (
-    <div className="mx-auto mt-12 flex w-[70%] flex-col items-center">
+    <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
       {album === undefined ? (
         <Loader />
       ) : (
-        <div className="flex max-h-[250px] w-[80%] items-center justify-start gap-12">
+        <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
           <img
             src={images[1]?.url}
             alt={album?.name}
-            className="aspect-square w-[250px]"
+            className="aspect-square w-44 sm:w-[250px]"
           />
-          <div className="mt-8 flex flex-col gap-4">
-            <h1 className="text-3xl font-bold text-white">{album?.name}</h1>
+          <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
+            <h1 className="inline-block w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap text-xl font-bold text-white sm:w-full sm:text-3xl">
+              {album?.name}
+            </h1>
 
             <ArtistProfile
               image_url={album?.artist.image_urls}
@@ -74,20 +76,25 @@ export default function AlbumDetail() {
             </div>
           </div>
           {album?.review_score && (
-            <RatingChip
-              ratingNumber={Math.round(album?.review_score)}
-              form="label"
-            />
+            <div className="mt-4 sm:mt-0">
+              <RatingChip
+                ratingNumber={Math.round(album?.review_score)}
+                form="label"
+              />
+            </div>
           )}
         </div>
       )}
 
-      <div className="mt-8 w-[80%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
-        {album?.review_content}
+      <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
+        <p className="mx-2 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
+          {album?.review_content}
+        </p>
       </div>
 
       <BestWorst best={album?.best_song} worst={album?.worst_song} />
-      <div className="mt-8 flex w-[80%] flex-col gap-2">
+
+      <div className="mx-2 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
         {/* //- Abstract this out to its own component */}
         {tracks.map((track, index) => (
           <TrackCard
@@ -115,37 +122,57 @@ export default function AlbumDetail() {
 //* This displays the artist name and image
 //! This queries the Spotify API for the artist image even though we already have it in the database
 //- FIX THIS
-const ArtistProfile = (props: {
+export const ArtistProfile = (props: {
   artistID?: string | undefined;
   token?: string;
   image_url?: string;
   artistName: string | undefined;
 }) => {
   const [artistImageURL, setArtistImageURL] = useState("");
+  const {
+    data: imageURL,
+    isLoading,
+    isSuccess,
+    refetch: refetchImage,
+  } = api.spotify.getArtistImageFromSpotify.useQuery(
+    {
+      id: props.artistID!,
+      accessToken: props.token!,
+    },
+    {
+      enabled: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    },
+  );
 
   useEffect(() => {
-    if (props.artistID && props.token) {
-      const {
-        data: imageURL,
-        isLoading,
-        isSuccess,
-      } = api.spotify.getArtistImageFromSpotify.useQuery({
-        id: props.artistID,
-        accessToken: props.token,
-      });
+    async function fetchImage() {
+      if (props.artistID && props.token) {
+        await refetchImage();
+        if (isLoading) {
+          console.log("loading url");
+        }
 
-      if (isLoading) {
-        console.log("loading url");
+        if (isSuccess && imageURL) {
+          setArtistImageURL(imageURL);
+        }
+      } else if (props.image_url) {
+        const urls = JSON.parse(props.image_url) as SpotifyImage[];
+        setArtistImageURL(urls[2]!.url);
       }
-
-      if (isSuccess && imageURL) {
-        setArtistImageURL(imageURL);
-      }
-    } else if (props.image_url) {
-      const urls = JSON.parse(props.image_url) as SpotifyImage[];
-      setArtistImageURL(urls[2]!.url);
     }
-  }, [props.artistID, props.image_url, props.token]);
+    void fetchImage();
+  }, [
+    imageURL,
+    isLoading,
+    isSuccess,
+    props.artistID,
+    props.image_url,
+    props.token,
+    refetchImage,
+  ]);
 
   return (
     <div className="flex items-center gap-2">
@@ -179,9 +206,9 @@ const BestWorst = (props: {
   worst: string | undefined;
 }) => {
   return (
-    <div className="mt-8 flex gap-8">
-      <div className="flex items-center  gap-2">
-        <RatingCard rating="Best" form="small" />
+    <div className="mt-4 flex flex-col gap-4 sm:mt-8 sm:flex-row sm:gap-8">
+      <div className="flex items-center gap-2">
+        <RatingCard rating="Best" form="medium" />
         {props.best === "-" ? (
           <p className="text-gray-500">None</p>
         ) : (
@@ -189,7 +216,7 @@ const BestWorst = (props: {
         )}
       </div>
       <div className="flex items-center gap-2">
-        <RatingCard rating="Worst" form="small" />
+        <RatingCard rating="Worst" form="medium" />
         {props.worst === "-" ? (
           <p className="text-gray-500">None</p>
         ) : (
@@ -226,36 +253,64 @@ export const TrackCard = (props: {
     props;
 
   return (
-    <div className="flex h-[50px] flex-row justify-between gap-2">
-      <div className="flex w-full justify-between rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
+    <div className="mx-2 flex h-[50px] flex-row justify-between gap-2 sm:mx-0">
+      <div className="flex w-full items-center justify-between rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-2 text-sm text-[#D2D2D3] shadow-lg sm:p-3 sm:text-base">
         <div className="flex w-full flex-row gap-2 overflow-hidden">
           <p className="">{trackNumber + 1 + "."}</p>
           {/* //- Change this to show all artists on bigger screens, but remove main artist on smaller */}
-          <p className="">{removeFeaturedArtist(name)}</p>
-        </div>
-        <div className="flex w-full flex-row items-start justify-between gap-2">
-          <p className="inline-block overflow-hidden overflow-ellipsis whitespace-nowrap text-gray-400">
-            {artists.map((artist, index, artists) =>
-              index + 1 === artists.length ? artist.name : artist.name + ", ",
-            )}
+          <p className="inline-block w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap sm:w-full">
+            {removeFeaturedArtist(name)}
           </p>
-          <p className="text-gray-400">{formatDuration(duration, "short")}</p>
+        </div>
+        <div className="flex w-[20%] flex-row items-start justify-between gap-1 sm:w-full sm:gap-2">
+          {window.innerWidth > 640 ? (
+            <>
+              <p className="relative overflow-hidden whitespace-nowrap text-gray-400">
+                {artists.map((artist, index, artists) =>
+                  index + 1 === artists.length
+                    ? artist.name
+                    : artist.name + ", ",
+                )}
+              </p>
+              <p className="text-gray-400">
+                {formatDuration(duration, "short")}
+              </p>
+            </>
+          ) : (
+            <p className="ml-auto text-gray-400">
+              {formatDuration(duration, "short")}
+            </p>
+          )}
         </div>
       </div>
       {select ? (
-        <select
-          // value={trackRatings[track.id]}
-          // onChange={(event) => handleRatingChange(track.id, event)}
-          className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg"
-          id={trackID}
-          defaultValue={rating}
-        >
-          {ratingValues.map((rating, index) => (
-            <option key={rating} value={index} className="text-gray-900">
-              {rating}
-            </option>
-          ))}
-        </select>
+        window.innerWidth < 640 ? (
+          <select
+            className="h-[50px] w-16 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-xs text-[#D2D2D3] shadow-lg"
+            id={trackID}
+            defaultValue={rating}
+          >
+            {ratingValues.map((rating, index) => (
+              <option key={rating} value={index} className="text-gray-900">
+                {rating}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <select
+            className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg"
+            id={trackID}
+            defaultValue={rating}
+          >
+            {ratingValues.map((rating, index) => (
+              <option key={rating} value={index} className="text-gray-900">
+                {rating}
+              </option>
+            ))}
+          </select>
+        )
+      ) : window.innerWidth < 640 ? (
+        <RatingCard rating={rating!} form="small" />
       ) : (
         <RatingCard rating={rating!} form="medium" />
       )}

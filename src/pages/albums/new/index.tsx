@@ -116,7 +116,7 @@ export default function NewAlbumPage() {
   };
 
   return (
-    <div className="m-10">
+    <div className="m-2 xl:m-10">
       <div className="flex flex-row gap-2">
         <input
           type="text"
@@ -160,72 +160,6 @@ export default function NewAlbumPage() {
     </div>
   );
 }
-
-// type AlbumReview = RouterOutputs["album"]["getAll"][number];
-const AlbumCard = (props: {
-  spotify_id: string;
-  name: string;
-  release_date?: string;
-  release_year?: number;
-  image_url: string | undefined;
-  artist: {
-    name: string | undefined;
-    spotify_id: string | undefined;
-  };
-  score?: number;
-}) => {
-  //* Get just the year from the release date
-  let year = 0;
-  let href = "";
-  if (props.release_date) {
-    const date = new Date(props.release_date);
-    year = date.getFullYear();
-    href = `/albums/new/${props.spotify_id}`;
-  } else if (props.release_year) {
-    year = props.release_year;
-    href = `/album/${props.spotify_id}`;
-  }
-
-  //* Apply custom marquee scroll animation to
-  //*  albums with names longer than 25 characters. (arbitrary)
-  let scrollAnimation = "";
-  if (props.name.length !== undefined) {
-    if (props.name.length > 25) {
-      scrollAnimation = "animate-marquee";
-    }
-  }
-
-  return (
-    <Link href={href}>
-      <div className="relative mt-5 flex max-h-max w-[208px] flex-col items-start overflow-hidden whitespace-nowrap text-start">
-        <ResponsiveImage
-          src={props.image_url!}
-          alt={`Photo of ${props.name}`}
-          className="aspect-square transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 xl:h-52"
-        />
-        <div className="mb-1 mt-2 flex w-full flex-col items-start ">
-          <p
-            className={
-              "mb-1 text-base font-medium text-white " + scrollAnimation
-            }
-          >
-            {props.name}
-          </p>
-          <div className="mt-1 flex items-center gap-1">
-            <p className="text-xs font-medium text-[#717171]">
-              {props.artist.name}
-            </p>
-            <p className="text-xs font-medium text-[#717171]">-</p>
-            <p className="text-xs font-medium text-[#717171]">{year}</p>
-          </div>
-          {props.score ? (
-            <RatingChip ratingNumber={Math.round(props.score)} form="small" />
-          ) : null}
-        </div>
-      </div>
-    </Link>
-  );
-};
 
 interface AlbumGridProps {
   searchedAlbums?: SpotifyAlbum[];
@@ -317,10 +251,10 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   return (
     <>
       {reviewedAlbums && (
-        <div className="flex flex-row gap-2">
+        <div className="flex w-full flex-row gap-2 ">
           <input
             type="text"
-            className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#d2d2d3a8]"
+            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] xl:w-80"
             placeholder="Filter by album name, artist or year..."
             onChange={(e) => {
               const filterText = e.target.value;
@@ -333,7 +267,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
             }}
           />
           <select
-            className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition "
+            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition xl:w-36 xl:text-base "
             onChange={(e) => sortAlbums(e.target.value)}
           >
             <option
@@ -381,7 +315,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
           </select>
         </div>
       )}
-      <div className="grid grid-cols-1 place-items-center gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7">
+      <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {albumGroup.length !== 0
           ? albumGroup.map((album) => albumTypeCheck(album))
           : null}
@@ -426,3 +360,70 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
     );
   }
 }
+
+// type AlbumReview = RouterOutputs["album"]["getAll"][number];
+const AlbumCard = (props: {
+  spotify_id: string;
+  name: string;
+  release_date?: string;
+  release_year?: number;
+  image_url: string | undefined;
+  artist: {
+    name: string | undefined;
+    spotify_id: string | undefined;
+  };
+  score?: number;
+}) => {
+  //* Get just the year from the release date
+  let year = 0;
+  let href = "";
+  if (props.release_date) {
+    const date = new Date(props.release_date);
+    year = date.getFullYear();
+    href = `/albums/new/${props.spotify_id}`;
+  } else if (props.release_year) {
+    year = props.release_year;
+    href = `/album/${props.spotify_id}`;
+  }
+
+  //* Apply custom marquee scroll animation to
+  //*  albums with names longer than 25 characters. (arbitrary)
+  let scrollAnimation = "";
+  if (props.name.length !== undefined) {
+    if (props.name.length > 25) {
+      scrollAnimation = "animate-marquee";
+    }
+  }
+
+  return (
+    <Link href={href}>
+      <div className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full">
+        <ResponsiveImage
+          src={props.image_url!}
+          alt={`Photo of ${props.name}`}
+          className="aspect-square max-h-[154px] transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
+        />
+        <div className="mb-1 mt-2 flex w-full flex-col items-start ">
+          <p
+            className={
+              "mb-1 text-sm font-medium text-white xl:text-base " +
+              scrollAnimation
+            }
+          >
+            {props.name}
+          </p>
+          <div className="mt-1 flex items-center gap-1">
+            <p className="text-xs font-medium text-[#717171]">
+              {props.artist.name}
+            </p>
+            <p className="text-xs font-medium text-[#717171]">-</p>
+            <p className="text-xs font-medium text-[#717171]">{year}</p>
+          </div>
+          {props.score ? (
+            <RatingChip ratingNumber={Math.round(props.score)} form="small" />
+          ) : null}
+        </div>
+      </div>
+    </Link>
+  );
+};

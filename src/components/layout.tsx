@@ -56,7 +56,7 @@ const NavLink = (props: {
   const { href, children, isActive } = props;
 
   const fancyUnderlineStyle =
-    "relative block w-fit text-center transition after:absolute after:block after:h-[3px] after:w-full after:origin-center after:scale-x-0 after:bg-white after:transition after:duration-300 after:content-[''] hover:text-white after:hover:scale-x-100 text-2xl";
+    "relative block w-fit text-center transition after:absolute after:block after:h-[3px] after:w-full after:origin-center after:scale-x-0 after:bg-white after:transition after:duration-300 after:content-[''] hover:text-white after:hover:scale-x-100 text-lg sm:text-2xl";
 
   const styles = isActive
     ? "text-white " + fancyUnderlineStyle

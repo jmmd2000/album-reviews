@@ -42,7 +42,7 @@ export default function AlbumsPage() {
   }
 
   return (
-    <div className="m-10">
+    <div className="m-2 xl:m-10">
       {/* {
         // If there are search results, render them.
         searchResults.length !== 0 ? (

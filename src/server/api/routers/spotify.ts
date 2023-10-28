@@ -438,6 +438,27 @@ export const spotifyRouter = createTRPCRouter({
           review_date: new Date().toISOString(),
         },
       });
+
+      //* Get all artists, sort them by average score and update their leaderboard position
+      const allArtists = await ctx.prisma.artist.findMany({
+        orderBy: {
+          average_score: "desc",
+        },
+      });
+
+      let leaderboardPosition = 1;
+      for (const artist of allArtists) {
+        await ctx.prisma.artist.update({
+          where: {
+            id: artist.id,
+          },
+          data: {
+            leaderboard_position: leaderboardPosition,
+          },
+        });
+        leaderboardPosition++;
+      }
+
       return test;
     }),
   //'--------------------
@@ -537,6 +558,27 @@ export const spotifyRouter = createTRPCRouter({
           review_score: roundedScore,
         },
       });
+
+      //* Get all artists, sort them by average score and update their leaderboard position
+      const allArtists = await ctx.prisma.artist.findMany({
+        orderBy: {
+          average_score: "desc",
+        },
+      });
+
+      let leaderboardPosition = 1;
+      for (const artist of allArtists) {
+        await ctx.prisma.artist.update({
+          where: {
+            id: artist.id,
+          },
+          data: {
+            leaderboard_position: leaderboardPosition,
+          },
+        });
+        leaderboardPosition++;
+      }
+
       return updatedAlbumReview;
     }),
 
@@ -608,6 +650,26 @@ export const spotifyRouter = createTRPCRouter({
 
           console.log(updatedArtist, "UPDATED ARTIST");
         }
+      }
+
+      //* Get all artists, sort them by average score and update their leaderboard position
+      const allArtists = await ctx.prisma.artist.findMany({
+        orderBy: {
+          average_score: "desc",
+        },
+      });
+
+      let leaderboardPosition = 1;
+      for (const artist of allArtists) {
+        await ctx.prisma.artist.update({
+          where: {
+            id: artist.id,
+          },
+          data: {
+            leaderboard_position: leaderboardPosition,
+          },
+        });
+        leaderboardPosition++;
       }
 
       return deletedAlbumReview;

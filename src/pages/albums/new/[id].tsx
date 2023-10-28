@@ -20,7 +20,7 @@ import {
   SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
-import { TrackCard } from "~/pages/album/[id]";
+import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
 
 export default function NewAlbumForm() {
   // const [token, setToken] = useState("");
@@ -362,18 +362,20 @@ export default function NewAlbumForm() {
 
   return (
     <>
-      <div className="mx-auto mt-12 flex w-[70%] flex-col items-center">
+      <div className="mx-auto mt-12 flex w-full flex-col items-center justify-center sm:w-[70%]">
         {album === undefined ? (
           <Loader />
         ) : (
-          <div className="flex max-h-[250px] w-[80%] items-center justify-start gap-12">
+          <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
             <img
               src={album?.images[1]?.url}
               alt={album?.name}
               className="aspect-square w-[250px]"
             />
-            <div className="mt-8 flex flex-col gap-4">
-              <h1 className="text-3xl font-bold text-white">{album?.name}</h1>
+            <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
+              <h1 className="inline-block w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap text-xl font-bold text-white sm:w-full sm:text-3xl">
+                {album?.name}
+              </h1>
 
               <ArtistProfile
                 artistID={album.artists[0]?.id}
@@ -393,7 +395,9 @@ export default function NewAlbumForm() {
               </div>
             </div>
             {review !== null && review !== undefined && (
-              <RatingChip ratingNumber={review.review_score!} form="label" />
+              <div className="mt-4 sm:mt-0">
+                <RatingChip ratingNumber={review.review_score!} form="label" />
+              </div>
             )}
           </div>
         )}
@@ -411,7 +415,8 @@ export default function NewAlbumForm() {
           bestValue={review?.best_song ?? ""}
           worstValue={review?.worst_song ?? ""}
         />
-        <div className="mt-8 flex w-[80%] flex-col gap-2">
+
+        <div className="mx-2 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
           {/*//* If a review exists, use the tracks from that review so we can get the scores */}
           {review === null
             ? album?.tracks.items.map((track, index) => (
@@ -479,47 +484,6 @@ export default function NewAlbumForm() {
   );
 }
 
-const ArtistProfile = (props: {
-  artistID: string | undefined;
-  token: string;
-  artistName: string | undefined;
-}) => {
-  const [artistImageURL, setArtistImageURL] = useState("");
-
-  const {
-    data: imageURL,
-    isLoading,
-    isSuccess,
-  } = api.spotify.getArtistImageFromSpotify.useQuery({
-    id: props.artistID!,
-    accessToken: props.token,
-  });
-
-  if (isLoading) {
-    console.log("loading url");
-  }
-
-  if (isSuccess && imageURL) {
-    // console.log("imageURL", imageURL);
-    // setArtistImageURL(imageURL);
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      {imageURL ? (
-        <img
-          src={imageURL}
-          alt={props.artistName}
-          className="aspect-square w-[35px]"
-        />
-      ) : (
-        <Loader />
-      )}
-      <p className="font-base text-md text-gray-300">{props.artistName}</p>
-    </div>
-  );
-};
-
 const ReviewContentInput = (props: {
   name: string;
   id: string;
@@ -530,7 +494,7 @@ const ReviewContentInput = (props: {
     <textarea
       name={name}
       id={id}
-      className="mt-8 h-[120px] w-[80%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg"
+      className="mt-8 h-[120px] w-full rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg sm:w-[80%]"
       placeholder="Write your review here..."
       defaultValue={value}
     ></textarea>
@@ -546,9 +510,9 @@ const BestWorstInput = (props: {
 }) => {
   const { name, bestID, worstID, bestValue, worstValue } = props;
   return (
-    <div className="mt-8 flex gap-4">
+    <div className="mt-4 flex flex-col gap-4 sm:mt-8 sm:flex-row sm:gap-8">
       <div className="flex items-center gap-2">
-        <RatingCard rating="Best" form="small" />
+        <RatingCard rating="Best" form="medium" />
         <input
           type="text"
           name={name}
@@ -558,7 +522,7 @@ const BestWorstInput = (props: {
         />
       </div>
       <div className="flex items-center gap-2">
-        <RatingCard rating="Worst" form="small" />
+        <RatingCard rating="Worst" form="medium" />
         <input
           type="text"
           name={name}

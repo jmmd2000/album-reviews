@@ -9,13 +9,13 @@ export const RatingCard = (props: {
   const sizeClassMap = {
     large: "h-14 w-28 text-lg",
     medium: "h-[50px] w-24 text-base",
-    small: "h-10 w-20 text-sm",
+    small: "h-[50px] w-20 text-xs",
   };
 
   const textSizeClassMap = {
     large: "text-xl",
     medium: "text-base",
-    small: "text-base",
+    small: "text-xs",
   };
 
   const colorClass = getColorClass(rating);
