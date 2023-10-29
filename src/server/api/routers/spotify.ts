@@ -246,6 +246,7 @@ export const spotifyRouter = createTRPCRouter({
         );
         // return response.json();
         const data = (await response.json()) as SpotifyAlbum;
+        // console.log(data, "DATA IN GET ALBUM DETAILS");
         const fullData = {
           album: data,
           formatted_runtime: getTotalDuration(data),
@@ -253,7 +254,7 @@ export const spotifyRouter = createTRPCRouter({
         };
         return fullData;
       } catch (err) {
-        //console.log(err, "ERROR IN GET ALBUM DETAILS");
+        // console.log(err, "ERROR IN GET ALBUM DETAILS");
       }
     }),
 

@@ -11,6 +11,7 @@ import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
+import Head from "next/head";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
@@ -103,28 +104,32 @@ export default function NewAlbumPage() {
   };
 
   return (
-    <div className="m-2 xl:m-10">
-      <div className="flex flex-row gap-2">
-        <input
-          type="text"
-          className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#D2D2D3]"
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleClick();
-            }
-          }}
-          placeholder="Search for an album..."
-        />
-        <button
-          className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-          onClick={handleClick}
-        >
-          Submit
-        </button>
-      </div>
-      {/* {
+    <>
+      <Head>
+        <title>Search</title>
+      </Head>
+      <div className="m-2 xl:m-10">
+        <div className="flex flex-row gap-2">
+          <input
+            type="text"
+            className="w-80 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-[#D2D2D3]"
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleClick();
+              }
+            }}
+            placeholder="Search for an album..."
+          />
+          <button
+            className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+            onClick={handleClick}
+          >
+            Submit
+          </button>
+        </div>
+        {/* {
         //* If there are search results, render them.
         searchResults.length !== 0 ? (
           <AlbumGrid albums={searchResults} />
@@ -135,16 +140,17 @@ export default function NewAlbumPage() {
           </h2>
         )
       } */}
-      {loading ? (
-        <Loader />
-      ) : searchResults.length !== 0 ? (
-        <AlbumGrid searchedAlbums={searchResults} controls />
-      ) : (
-        <h2 className="m-16 text-xl text-[#D2D2D3]">
-          Use the input to search for albums.
-        </h2>
-      )}
-    </div>
+        {loading ? (
+          <Loader />
+        ) : searchResults.length !== 0 ? (
+          <AlbumGrid searchedAlbums={searchResults} controls />
+        ) : (
+          <h2 className="m-16 text-xl text-[#D2D2D3]">
+            Use the input to search for albums.
+          </h2>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -242,10 +248,11 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
         <div className="flex w-full flex-row gap-2 ">
           <input
             type="text"
-            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] xl:w-80"
+            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
             placeholder="Filter by album name, artist or year..."
             onChange={(e) => {
               const filterText = e.target.value;
+              // console.log(filterText.length);
               if (filterText.length === 0) {
                 setAlbumGroup(reviewedAlbums);
               } else {
@@ -255,7 +262,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
             }}
           />
           <select
-            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition xl:w-36 xl:text-base "
+            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base "
             onChange={(e) => sortAlbums(e.target.value)}
           >
             <option

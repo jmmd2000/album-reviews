@@ -18,6 +18,7 @@ import {
 import { api } from "~/utils/api";
 import Link from "next/link";
 import { useAuthContext } from "~/context/AuthContext";
+import Head from "next/head";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -48,77 +49,82 @@ export default function AlbumDetail() {
   }, [isSuccess]);
 
   return (
-    <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
-      {album === undefined ? (
-        <Loader />
-      ) : (
-        <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
-          <img
-            src={images[1]?.url}
-            alt={album?.name}
-            className="aspect-square w-44 sm:w-[250px]"
-          />
-          <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
-            <h1 className="inline-block w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap text-xl font-bold text-white sm:w-full sm:text-3xl">
-              {album?.name}
-            </h1>
-
-            <ArtistProfile
-              image_url={album?.artist.image_urls}
-              artistName={album?.artist.name}
-              artistID={album?.artist.spotify_id}
+    <>
+      <Head>
+        <title>{album?.name}</title>
+      </Head>
+      <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
+        {album === undefined ? (
+          <Loader />
+        ) : (
+          <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
+            <img
+              src={images[1]?.url}
+              alt={album?.name}
+              className="aspect-square w-44 sm:w-[250px]"
             />
-            <div className="relative mt-4">
-              <p className="text-base text-gray-500">
-                {tracks.length + " tracks"}
-              </p>
-              <p className="text-base text-gray-500">{album?.runtime}</p>
-              <p className="text-base text-gray-500">{album?.release_date}</p>
-            </div>
-          </div>
-          {album?.review_score && (
-            <div className="mt-4 sm:mt-0">
-              <RatingChip
-                ratingNumber={Math.round(album?.review_score)}
-                form="label"
+            <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
+              <h1 className="inline-block min-w-[350px] max-w-[500px] overflow-hidden overflow-ellipsis text-xl font-bold text-white sm:w-full sm:text-3xl">
+                {album?.name}
+              </h1>
+
+              <ArtistProfile
+                image_url={album?.artist.image_urls}
+                artistName={album?.artist.name}
+                artistID={album?.artist.spotify_id}
               />
+              <div className="relative mt-4">
+                <p className="text-base text-gray-500">
+                  {tracks.length + " tracks"}
+                </p>
+                <p className="text-base text-gray-500">{album?.runtime}</p>
+                <p className="text-base text-gray-500">{album?.release_date}</p>
+              </div>
             </div>
-          )}
+            {album?.review_score && (
+              <div className="mt-4 sm:mt-0">
+                <RatingChip
+                  ratingNumber={Math.round(album?.review_score)}
+                  form="label"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
+          <p className="mx-2 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
+            {album?.review_content}
+          </p>
         </div>
-      )}
 
-      <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
-        <p className="mx-2 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
-          {album?.review_content}
-        </p>
+        <BestWorst best={album?.best_song} worst={album?.worst_song} />
+
+        <div className="mx-2 mb-4 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
+          {/* //- Abstract this out to its own component */}
+          {tracks.map((track, index) => (
+            <TrackCard
+              key={track.track_id}
+              trackNumber={index}
+              name={track.track_name}
+              artists={track.track_artist}
+              duration={track.track_duration}
+              rating={track.rating}
+              trackID={track.track_id}
+            />
+          ))}
+        </div>
+
+        {auth && (
+          <button
+            className="my-4 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+            onClick={editReview}
+          >
+            Edit
+          </button>
+        )}
       </div>
-
-      <BestWorst best={album?.best_song} worst={album?.worst_song} />
-
-      <div className="mx-2 mb-4 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
-        {/* //- Abstract this out to its own component */}
-        {tracks.map((track, index) => (
-          <TrackCard
-            key={track.track_id}
-            trackNumber={index}
-            name={track.track_name}
-            artists={track.track_artist}
-            duration={track.track_duration}
-            rating={track.rating}
-            trackID={track.track_id}
-          />
-        ))}
-      </div>
-
-      {auth && (
-        <button
-          className="my-4 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-          onClick={editReview}
-        >
-          Edit
-        </button>
-      )}
-    </div>
+    </>
   );
 }
 

@@ -17,6 +17,7 @@ import {
 } from "~/types";
 import { api } from "~/utils/api";
 import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
+import Head from "next/head";
 // import { useAuthContext } from "~/context/AuthContext";
 
 export default function NewAlbumForm() {
@@ -355,6 +356,9 @@ export default function NewAlbumForm() {
 
   return (
     <>
+      <Head>
+        <title>Edit: {album?.name}</title>
+      </Head>
       <div className="mx-auto mt-12 flex w-full flex-col items-center justify-center sm:w-[70%]">
         {album === undefined ? (
           <Loader />

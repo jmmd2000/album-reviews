@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Head from "next/head";
 import Image from "next/image";
 import { useEffect } from "react";
 import { Loader } from "~/components/Loader";
@@ -23,6 +24,9 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <title>JamesReviewsMusic</title>
+      </Head>
       <div className="flex w-full flex-col items-center justify-evenly lg:flex-row">
         {/* Home Content */}
         <div className="flex flex-col p-8 md:p-16 lg:max-w-[50%]">

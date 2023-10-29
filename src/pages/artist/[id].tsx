@@ -6,6 +6,7 @@ import { Loader } from "~/components/Loader";
 import { type AlbumReview, type SpotifyImage } from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
+import Head from "next/head";
 
 export default function ArtistDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -42,6 +43,9 @@ export default function ArtistDetail() {
 
   return (
     <>
+      <Head>
+        <title>{artist?.name}</title>
+      </Head>
       <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
         {artist === undefined ? (
           <Loader />

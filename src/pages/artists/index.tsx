@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
+import Head from "next/head";
 
 export default function ArtistsPage() {
   const [artists, setArtists] = useState<ReviewedArtist[]>([]);
@@ -42,50 +43,27 @@ export default function ArtistsPage() {
   }
 
   return (
-    <div className="m-2 xl:m-10">
-      {/* {
-        // If there are search results, render them.
-        searchResults.length !== 0 ? (
-          <AlbumGrid albums={searchResults} />
-        ) : (
-          // If there are no search results, render a message.
-          <h2 className="m-16 text-xl text-[#D2D2D3]">
-            Use the input to search for albums.
-          </h2>
-        )
-      } */}
-      <ArtistGrid artists={artists} />
-      {/* {isLoading ? (
-        <div className="mx-auto mt-20 flex h-10 w-20 items-center justify-center">
-          <Loader />
-        </div>
-      ) : isSuccess ? (
-        artists ? (
-          <ArtistGrid artists={artists} />
-        ) : (
-          <h2 className="m-16 text-xl text-[#D2D2D3]">
-            No artists have been reviewed yet :(
-          </h2>
-        )
-      ) : isError ? (
-        <h2 className="m-16 text-xl text-[#D2D2D3]">
-          Error fetching artists :(
-        </h2>
-      ) : null} */}
-      <ToastContainer
-        toastStyle={{
-          // same as bg-gray-700 bg-opacity-10
-          background: "rgba(55, 65, 81, 0.1)",
-          color: "#D2D2D3",
-          borderRadius: "0.375rem",
-          backdropFilter: "blur(10px)",
-        }}
-        progressStyle={{
-          borderRadius: "0.375rem",
-        }}
-        position="top-right"
-      />
-    </div>
+    <>
+      <Head>
+        <title>Artists</title>
+      </Head>
+      <div className="m-2 xl:m-10">
+        <ArtistGrid artists={artists} />
+        <ToastContainer
+          toastStyle={{
+            //* same as bg-gray-700 bg-opacity-10
+            background: "rgba(55, 65, 81, 0.1)",
+            color: "#D2D2D3",
+            borderRadius: "0.375rem",
+            backdropFilter: "blur(10px)",
+          }}
+          progressStyle={{
+            borderRadius: "0.375rem",
+          }}
+          position="top-right"
+        />
+      </div>
+    </>
   );
 }
 
@@ -161,12 +139,13 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
         <div className="flex flex-row gap-2">
           <input
             type="text"
-            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] xl:w-80"
+            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] md:w-80"
             placeholder="Filter by artist name..."
             onChange={(e) => {
               const filterText = e.target.value;
+              // console.log(filterText.length);
               if (filterText.length === 0) {
-                setReviewedArtists(reviewedArtists);
+                setReviewedArtists(artists);
               } else {
                 const filteredArtists = filterArtists(filterText);
                 setReviewedArtists(filteredArtists);
@@ -174,7 +153,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
             }}
           />
           <select
-            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition xl:w-36 "
+            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 "
             onChange={(e) => sortArtists(e.target.value)}
           >
             <option
