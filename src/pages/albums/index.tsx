@@ -38,7 +38,7 @@ export default function AlbumsPage() {
   // } = api.spotify.getAllArtists.useQuery();
 
   if (isSuccess) {
-    console.log(albumReviews);
+    //console.log(albumReviews);
   }
 
   return (
@@ -60,9 +60,8 @@ export default function AlbumsPage() {
         </div>
       ) : isSuccess ? (
         reviews ? (
-          <AlbumGrid reviewedAlbums={reviews} />
+          <AlbumGrid reviewedAlbums={reviews} controls />
         ) : (
-          // <AlbumGrid reviewedAlbums={albumReviews as AlbumReview[]} />
           <h2 className="m-16 text-xl text-[#D2D2D3]">
             No albums have been reviewed yet :(
           </h2>

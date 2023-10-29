@@ -1,29 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-// import { ReviewedAlbum } from "@prisma/client";
-// import Head from "next/head";
-// import Image from "next/image";
 import Link from "next/link";
-import Image from "next/image";
-// import { env } from "~/env.mjs";
-
 import { api } from "~/utils/api";
-// import { getAccessToken } from "~/server/spotify";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type AlbumReview,
   type SpotifyAlbum,
   type SpotifyImage,
-  // SpotifySearchResponse,
 } from "src/types";
-// import { set, z } from "zod";
-// import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
-import { set } from "zod";
-import { placeholderImage64 } from "~/helpers/dateFormat";
 import ResponsiveImage from "~/components/ResponsiveImage";
-// import { type } from "os";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
@@ -108,10 +95,10 @@ export default function NewAlbumPage() {
   const handleClick = () => {
     handleSearch()
       .then(() => {
-        console.log("done");
+        //console.log("done");
       })
-      .catch((error: Error) => {
-        console.log(error.message);
+      .catch(() => {
+        //console.log(error.message);
       });
   };
 
@@ -151,7 +138,7 @@ export default function NewAlbumPage() {
       {loading ? (
         <Loader />
       ) : searchResults.length !== 0 ? (
-        <AlbumGrid searchedAlbums={searchResults} />
+        <AlbumGrid searchedAlbums={searchResults} controls />
       ) : (
         <h2 className="m-16 text-xl text-[#D2D2D3]">
           Use the input to search for albums.
@@ -164,10 +151,11 @@ export default function NewAlbumPage() {
 interface AlbumGridProps {
   searchedAlbums?: SpotifyAlbum[];
   reviewedAlbums?: AlbumReview[];
+  controls?: boolean;
 }
 
 export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
-  const { searchedAlbums, reviewedAlbums } = props;
+  const { searchedAlbums, reviewedAlbums, controls } = props;
   const [albumGroup, setAlbumGroup] = useState<SpotifyAlbum[] | AlbumReview[]>(
     [],
   );
@@ -250,7 +238,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   //- TODO: Improve this
   return (
     <>
-      {reviewedAlbums && (
+      {reviewedAlbums && controls && (
         <div className="flex w-full flex-row gap-2 ">
           <input
             type="text"
@@ -352,8 +340,10 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
         release_year={albumReview.release_year}
         image_url={imageURL[1]?.url}
         artist={{
-          name: albumReview.artist.name,
-          spotify_id: albumReview.artist.spotify_id,
+          name: albumReview.artist ? albumReview.artist.name : undefined,
+          spotify_id: albumReview.artist
+            ? albumReview.artist.spotify_id
+            : undefined,
         }}
         score={albumReview.review_score}
       />
@@ -362,13 +352,13 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
 }
 
 // type AlbumReview = RouterOutputs["album"]["getAll"][number];
-const AlbumCard = (props: {
+export const AlbumCard = (props: {
   spotify_id: string;
   name: string;
   release_date?: string;
   release_year?: number;
   image_url: string | undefined;
-  artist: {
+  artist?: {
     name: string | undefined;
     spotify_id: string | undefined;
   };
@@ -413,10 +403,14 @@ const AlbumCard = (props: {
             {props.name}
           </p>
           <div className="mt-1 flex items-center gap-1">
-            <p className="text-xs font-medium text-[#717171]">
-              {props.artist.name}
-            </p>
-            <p className="text-xs font-medium text-[#717171]">-</p>
+            {props.artist?.name ? (
+              <>
+                <p className="text-xs font-medium text-[#717171]">
+                  {props.artist.name}
+                </p>
+                <p className="text-xs font-medium text-[#717171]">-</p>
+              </>
+            ) : null}
             <p className="text-xs font-medium text-[#717171]">{year}</p>
           </div>
           {props.score ? (

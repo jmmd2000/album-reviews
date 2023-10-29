@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
-import { useTokenContext } from "~/context/TokenContext";
 import { removeFeaturedArtist } from "~/helpers/dateFormat";
 import { formatDuration } from "~/helpers/durationConversion";
 import {
@@ -18,12 +17,14 @@ import {
 } from "~/types";
 import { api } from "~/utils/api";
 import Link from "next/link";
+import { useAuthContext } from "~/context/AuthContext";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
   const [images, setImages] = useState<SpotifyImage[]>([]);
-  const { token } = useTokenContext();
+  const { auth } = useAuthContext();
+
   const router = useRouter();
   const albumID = router.query.id as string;
 
@@ -38,7 +39,7 @@ export default function AlbumDetail() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
-    console.log("album", album);
+    //console.log("album", album);
     if (isSuccess) {
       setTracks(JSON.parse(album!.scored_tracks) as ReviewedTrack[]);
       setImages(JSON.parse(album!.image_urls) as SpotifyImage[]);
@@ -94,7 +95,7 @@ export default function AlbumDetail() {
 
       <BestWorst best={album?.best_song} worst={album?.worst_song} />
 
-      <div className="mx-2 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
+      <div className="mx-2 mb-4 mt-4 flex w-full flex-col gap-2 sm:mx-0 sm:mt-8 sm:w-[80%]">
         {/* //- Abstract this out to its own component */}
         {tracks.map((track, index) => (
           <TrackCard
@@ -109,12 +110,14 @@ export default function AlbumDetail() {
         ))}
       </div>
 
-      <button
-        className="my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
-        onClick={editReview}
-      >
-        Edit
-      </button>
+      {auth && (
+        <button
+          className="my-4 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+          onClick={editReview}
+        >
+          Edit
+        </button>
+      )}
     </div>
   );
 }
@@ -152,7 +155,7 @@ export const ArtistProfile = (props: {
       if (props.artistID && props.token) {
         await refetchImage();
         if (isLoading) {
-          console.log("loading url");
+          //console.log("loading url");
         }
 
         if (isSuccess && imageURL) {

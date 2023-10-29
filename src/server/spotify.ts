@@ -30,5 +30,5 @@ export async function getAccessToken() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const token = await getAccessToken();
-console.log(token, "TOKOOOOAKSOAKOASKOASKOAKS");
+// const token = await getAccessToken();
+//console.log(token, "TOKOOOOAKSOAKOASKOASKOAKS");

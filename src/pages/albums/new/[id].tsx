@@ -4,31 +4,29 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
-import { removeFeaturedArtist } from "~/helpers/dateFormat";
-import { formatDuration } from "~/helpers/durationConversion";
-import { Id, toast, ToastContainer } from "react-toastify";
+import { type Id, toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
-  AlbumWithExtras,
-  RatingValue,
-  ReviewedTrack,
-  SpotifyAlbum,
-  SpotifyImage,
+  type AlbumWithExtras,
+  type ReviewedTrack,
+  // type SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
 import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
+// import { useAuthContext } from "~/context/AuthContext";
 
 export default function NewAlbumForm() {
   // const [token, setToken] = useState("");
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
-  const [images, setImages] = useState<SpotifyImage[]>([]);
+  // const [images, setImages] = useState<SpotifyImage[]>([]);
   // const [artistID, setArtistID] = useState("");
   const { token } = useTokenContext();
+  // const { auth } = useAuthContext();
   const router = useRouter();
   const albumID = router.query.id as string;
   let creatingToast: Id | null = null;
@@ -42,9 +40,9 @@ export default function NewAlbumForm() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
-    console.log("review", review);
-    console.log("isLoading", isLoading);
-    console.log("reviewExists", reviewExists);
+    //console.log("review", review);
+    //console.log("isLoading", isLoading);
+    //console.log("reviewExists", reviewExists);
     if (reviewExists) {
       if (review?.scored_tracks) {
         setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
@@ -54,15 +52,10 @@ export default function NewAlbumForm() {
   }, [reviewExists, checkingIfExists]);
 
   useEffect(() => {
-    console.log("albumID is:", albumID);
+    //console.log("albumID is:", albumID);
   }, [albumID]);
 
-  const {
-    data: albumInfo,
-    isLoading,
-    isSuccess,
-    refetch: fetchAlbumInfo,
-  } = api.spotify.getAlbumDetails.useQuery(
+  const { refetch: fetchAlbumInfo } = api.spotify.getAlbumDetails.useQuery(
     {
       id: albumID,
       accessToken: token,
@@ -84,7 +77,7 @@ export default function NewAlbumForm() {
 
         //* Handle loading state
         if (isLoading) {
-          console.log("loading");
+          //console.log("loading");
         }
 
         //* If the search results are successfully fetched, and are not undefined, save them in state.
@@ -115,15 +108,15 @@ export default function NewAlbumForm() {
 
     getDetails()
       .then(() => {
-        console.log("done");
+        //console.log("done");
         // console.log("albumDetails", albumDetails);
         // if (albumDetails?.artists[0] !== undefined) {
         //   console.log("DING DING DING", albumDetails.artists[0].id);
         //   setArtistID(albumDetails.artists[0].id);
         // }
       })
-      .catch((error: Error) => {
-        console.log(error.message);
+      .catch(() => {
+        //console.log(error.message);
       });
   }, [token, albumID]);
 
@@ -132,8 +125,8 @@ export default function NewAlbumForm() {
   const {
     mutate: createNewReview,
     isLoading: loadingCreate,
-    isSuccess: successfulCreate,
-    isError: errorOnCreate,
+    // isSuccess: successfulCreate,
+    // isError: errorOnCreate,
   } = api.spotify.createAlbumReview.useMutation({
     onSuccess: () => {
       // console.log("successful create", data);
@@ -164,8 +157,8 @@ export default function NewAlbumForm() {
   const {
     mutate: updateCurrentReview,
     isLoading: loadingUpdate,
-    isSuccess: successfulUpdate,
-    isError: errorOnUpdate,
+    // isSuccess: successfulUpdate,
+    // isError: errorOnUpdate,
   } = api.spotify.updateAlbumReview.useMutation({
     onSuccess: () => {
       toast.update(updatingToast!, {
@@ -194,8 +187,8 @@ export default function NewAlbumForm() {
   const {
     mutate: deleteCurrentReview,
     isLoading: loadingDelete,
-    isSuccess: successfulDelete,
-    isError: errorOnDelete,
+    // isSuccess: successfulDelete,
+    // isError: errorOnDelete,
   } = api.spotify.deleteAlbumReview.useMutation({
     onSuccess: () => {
       toast.update(deletingToast!, {
@@ -275,15 +268,15 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    const finalReview = {
-      album: album,
-      review_content: reviewContent,
-      best_song: bestSong,
-      worst_song: worstSong,
-      tracks: trackArray,
-      formatted_release_date: albumDetails?.formatted_release_date,
-      formatted_runtime: albumDetails?.formatted_runtime,
-    };
+    // const finalReview = {
+    //   album: album,
+    //   review_content: reviewContent,
+    //   best_song: bestSong,
+    //   worst_song: worstSong,
+    //   tracks: trackArray,
+    //   formatted_release_date: albumDetails?.formatted_release_date,
+    //   formatted_runtime: albumDetails?.formatted_runtime,
+    // };
 
     createNewReview({
       album: album!,
@@ -335,13 +328,13 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    const finalReview = {
-      review_content: reviewContent,
-      best_song: bestSong,
-      worst_song: worstSong,
-      tracks: trackArray,
-      artist_id: review?.artist.spotify_id,
-    };
+    // const finalReview = {
+    //   review_content: reviewContent,
+    //   best_song: bestSong,
+    //   worst_song: worstSong,
+    //   tracks: trackArray,
+    //   artist_id: review?.artist.spotify_id,
+    // };
 
     updateCurrentReview({
       review_content: reviewContent,

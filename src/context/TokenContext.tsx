@@ -100,8 +100,8 @@ export function TokenProvider({ children }: { children: ReactNode }) {
           .then(() => {
             // console.log("done");
           })
-          .catch((error: Error) => {
-            console.log(error.message);
+          .catch(() => {
+            //console.log(error.message);
           });
       } else {
         // Token is still valid, use it
@@ -111,10 +111,10 @@ export function TokenProvider({ children }: { children: ReactNode }) {
       // Token not found in local storage, fetch a new one
       fetchAndSetToken()
         .then(() => {
-          // console.log("done");
+          // //console.log("done");
         })
-        .catch((error: Error) => {
-          console.log(error.message);
+        .catch(() => {
+          //console.log(error.message);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

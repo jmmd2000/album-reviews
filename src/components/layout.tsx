@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, useState, useEffect } from "react";
+import { useAuthContext } from "~/context/AuthContext";
+import { api } from "~/utils/api";
 
 export const Layout = (props: PropsWithChildren) => {
   return (
@@ -13,7 +15,9 @@ export const Layout = (props: PropsWithChildren) => {
 };
 
 const Navbar = () => {
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
   const router = useRouter();
+  const { auth } = useAuthContext();
 
   //* Determine if a link is active
   const isActive = (href: string) => {
@@ -29,7 +33,16 @@ const Navbar = () => {
       className="flex h-[90px] w-full items-center justify-start gap-8 bg-gray-900 bg-opacity-10 bg-clip-padding p-4 shadow-lg backdrop-blur-lg
     "
     >
-      <Image src="/favicon.ico" alt="logo" width={50} height={50} priority />
+      <Image
+        src="/favicon.ico"
+        alt="logo"
+        width={50}
+        height={50}
+        priority
+        onDoubleClick={() => {
+          setShowPasswordInput(!showPasswordInput);
+        }}
+      />
       <div className="flex items-baseline justify-evenly gap-10">
         <NavLink href="/" isActive={isActive("/")}>
           Home
@@ -37,13 +50,20 @@ const Navbar = () => {
         <NavLink href="/albums" isActive={isActive("/albums")}>
           Albums
         </NavLink>
-        {/* <NavLink href="/albums/new" isActive={isActive("/albums")}>
-          New
-        </NavLink> */}
+        {auth && (
+          <NavLink href="/albums/new" isActive={isActive("/albums")}>
+            New
+          </NavLink>
+        )}
         <NavLink href="/artists" isActive={isActive("/artists")}>
           Artists
         </NavLink>
       </div>
+      {showPasswordInput && (
+        <div className="ml-auto">
+          <PasswordInput />
+        </div>
+      )}
     </nav>
   );
 };
@@ -66,5 +86,69 @@ const NavLink = (props: {
     <Link href={href} className={styles}>
       {children}
     </Link>
+  );
+};
+
+const PasswordInput = () => {
+  const [passwordInput, setPasswordInput] = useState<string>("");
+
+  const {
+    data: isAuthed,
+    isLoading: checkingIsAuthed,
+    isSuccess: checkingAuthSuccess,
+    refetch: checkAuth,
+  } = api.spotify.checkAuth.useQuery(passwordInput, {
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+  const { updateAuth } = useAuthContext();
+
+  useEffect(() => {
+    if (isAuthed === true) {
+      //console.log("isAuthed", isAuthed);
+      updateAuth(true);
+    } else {
+      updateAuth(false);
+    }
+
+    if (checkingAuthSuccess) {
+      //console.log("checkingAuthSuccess", checkingAuthSuccess);
+    }
+    if (checkingIsAuthed) {
+      //console.log("checkingIsAuthed", checkingIsAuthed);
+    }
+  }, [isAuthed, checkingAuthSuccess, checkingIsAuthed, updateAuth]);
+
+  const submitPassword = () => {
+    void checkAuth();
+  };
+
+  // const logOut = () => {
+  //   updateAuth(false);
+  // };
+
+  return (
+    <>
+      <div className="z-10 flex w-full flex-row gap-2">
+        <input
+          type="password"
+          className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] xl:w-80"
+          placeholder="Enter password..."
+          onChange={(e) => {
+            setPasswordInput(e.target.value);
+          }}
+        />
+        <button
+          className=" w-24 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600 xl:w-24 xl:text-base"
+          onClick={submitPassword}
+        >
+          Submit
+        </button>
+      </div>
+    </>
   );
 };

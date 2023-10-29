@@ -1,20 +1,16 @@
 import { api } from "~/utils/api";
-import { Loader } from "~/components/Loader";
-import { ReviewedArtist, SpotifyImage } from "~/types";
+import { type ReviewedArtist, type SpotifyImage } from "~/types";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { RatingChip } from "~/components/RatingChip";
-import Image from "next/image";
-import { placeholderImage64 } from "~/helpers/dateFormat";
 import ResponsiveImage from "~/components/ResponsiveImage";
 
 export default function ArtistsPage() {
   const [artists, setArtists] = useState<ReviewedArtist[]>([]);
   const {
     data: reviewedArtists,
-    isLoading,
     isSuccess,
     isError,
   } = api.spotify.getAllArtists.useQuery();

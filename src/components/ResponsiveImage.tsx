@@ -22,6 +22,7 @@ const ResponsiveImage = (props: {
         alt={props.alt}
         className={props.className}
         onLoad={() => setLoaded(true)}
+        loading="lazy"
       />
     </div>
   );
