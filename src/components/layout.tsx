@@ -4,12 +4,14 @@ import { useRouter } from "next/router";
 import { type PropsWithChildren, useState, useEffect } from "react";
 import { useAuthContext } from "~/context/AuthContext";
 import { api } from "~/utils/api";
+import { Analytics } from "@vercel/analytics/react";
 
 export const Layout = (props: PropsWithChildren) => {
   return (
     <>
       <Navbar />
       <main>{props.children}</main>
+      <Analytics />
     </>
   );
 };
