@@ -699,6 +699,9 @@ export const spotifyRouter = createTRPCRouter({
       include: {
         artist: true,
       },
+      orderBy: {
+        review_date: "desc",
+      },
     });
     return reviews;
   }),

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { api } from "~/utils/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   type AlbumReview,
   type SpotifyAlbum,
@@ -371,6 +371,10 @@ export const AlbumCard = (props: {
   };
   score?: number;
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLParagraphElement>(null);
+  const [scrollAnimation, setScrollAnimation] = useState("");
+
   //* Get just the year from the release date
   let year = 0;
   let href = "";
@@ -383,18 +387,28 @@ export const AlbumCard = (props: {
     href = `/album/${props.spotify_id}`;
   }
 
-  //* Apply custom marquee scroll animation to
-  //*  albums with names longer than 25 characters. (arbitrary)
-  let scrollAnimation = "";
-  if (props.name.length !== undefined) {
-    if (props.name.length > 25) {
-      scrollAnimation = "animate-marquee";
-    }
-  }
+  //* Apply custom marquee scroll animation to albums with names longer than the card width
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (titleRef.current && cardRef.current) {
+        if (titleRef.current.offsetWidth > cardRef.current.offsetWidth) {
+          setScrollAnimation("animate-marquee");
+        }
+      }
+    };
+
+    checkOverflow();
+    // Check on window resize
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, []);
 
   return (
     <Link href={href}>
-      <div className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full">
+      <div
+        className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full"
+        ref={cardRef}
+      >
         <ResponsiveImage
           src={props.image_url!}
           alt={`Photo of ${props.name}`}
@@ -406,6 +420,7 @@ export const AlbumCard = (props: {
               "mb-1 text-sm font-medium text-white xl:text-base " +
               scrollAnimation
             }
+            ref={titleRef}
           >
             {props.name}
           </p>

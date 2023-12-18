@@ -1,6 +1,6 @@
 import { api } from "~/utils/api";
 import { type ReviewedArtist, type SpotifyImage } from "~/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
@@ -226,21 +226,35 @@ const ArtistCard = (props: {
   num_albums: number;
   average_score: number;
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLParagraphElement>(null);
+  const [scrollAnimation, setScrollAnimation] = useState("");
+
   const urls = JSON.parse(props.image_urls) as SpotifyImage[];
   const image_url = urls[1]!.url;
 
-  //* Apply custom marquee scroll animation to
-  //*  albums with names longer than 25 characters. (arbitrary)
-  let scrollAnimation = "";
-  if (props.name.length !== undefined) {
-    if (props.name.length > 25) {
-      scrollAnimation = "animate-marquee";
-    }
-  }
+  //* Apply custom marquee scroll animation to artists with names longer than the card width
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (titleRef.current && cardRef.current) {
+        if (titleRef.current.offsetWidth > cardRef.current.offsetWidth) {
+          setScrollAnimation("animate-marquee");
+        }
+      }
+    };
+
+    checkOverflow();
+    // Check on window resize
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, []);
 
   return (
     <Link href={`/artist/${props.spotify_id}`}>
-      <div className="relative mt-5 flex max-h-max flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 xl:w-full">
+      <div
+        className="relative mt-5 flex max-h-max flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 xl:w-full"
+        ref={cardRef}
+      >
         <ResponsiveImage
           src={image_url}
           alt={`Photo of ${props.name}`}
@@ -252,6 +266,7 @@ const ArtistCard = (props: {
               "mb-1 text-sm font-medium text-white xl:text-base " +
               scrollAnimation
             }
+            ref={titleRef}
           >
             {props.name}
           </p>
