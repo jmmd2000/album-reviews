@@ -1,12 +1,23 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { type AlbumReview, type SpotifyImage } from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
 import Head from "next/head";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function ArtistDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -21,12 +32,6 @@ export default function ArtistDetail() {
     // isLoading,
     isSuccess,
   } = api.spotify.getArtistById.useQuery(artistID);
-
-  // const {
-  //   data: artist_tracks,
-  //   // isLoading,
-  //   isSuccess: artistTracksSuccess,
-  // } = api.spotify.getArtistTracks.useQuery(artistID);
 
   useEffect(() => {
     //console.log("artist", artist);
@@ -83,8 +88,77 @@ export default function ArtistDetail() {
         )}
       </div>
       <div className="mx-auto mt-12 w-full">
+        <AlbumReviewChart reviews={albums} />
+      </div>
+      <div className="mx-auto mt-12 w-full">
         <AlbumGrid reviewedAlbums={albums} />
       </div>
     </>
   );
 }
+
+interface AlbumReviewChartProps {
+  reviews: AlbumReview[];
+}
+
+const AlbumReviewChart = (props: AlbumReviewChartProps) => {
+  const { reviews } = props;
+
+  const data = reviews.map((review, index) => ({
+    id: index,
+    url: parseImageURL(review.image_urls), // Used for the X-axis
+    review_score: review.review_score, // Used for the Y-axis
+  }));
+
+  function parseImageURL(urls: string) {
+    const url = JSON.parse(urls) as SpotifyImage[];
+    console.log("url", url[2]!.url);
+    return url[2]!.url;
+  }
+
+  return (
+    <div className="m-auto flex w-3/4 justify-center rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition">
+      <ResponsiveContainer width="100%" height={300} className="-ml-[40px]">
+        <LineChart
+          width={1000}
+          height={300}
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="1 10" />
+          <XAxis dataKey="url" height={70} interval={0} tick={CustomTick} />
+          <YAxis domain={[0, 100]} />
+          <Line type="monotone" dataKey="review_score" stroke="#fff" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+interface CustomTickProps {
+  x: number;
+  y: number;
+  payload: {
+    value: string; // Adjust according to your data, could be number or string
+    coordinate: number;
+    index?: number;
+    offset?: number;
+  };
+  visibleTicksCount?: number;
+  width?: number;
+  height?: number;
+}
+
+const CustomTick = (props: CustomTickProps) => {
+  const { x, y, payload } = props;
+  console.log("payload", payload.value);
+  return (
+    <foreignObject x={x - 32} y={y} width="64" height="64">
+      <img
+        src={payload.value}
+        alt="album art"
+        className="h-12 w-12 object-cover md:h-16 md:w-16"
+      />
+    </foreignObject>
+  );
+};

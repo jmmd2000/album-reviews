@@ -50,7 +50,15 @@ export default function Home() {
           </div>
 
           <p className="mb-10 text-xl font-light text-gray-50">
-            You can see a few of my top artists here also.
+            You can see a few of my top artists here also. I also have a{" "}
+            <a
+              href="https://open.spotify.com/playlist/7f87l51cuxevxtd34mjSUs?si=8655c0cd75ff4711"
+              target="blank"
+              className="text-fuchsia-400 hover:underline"
+            >
+              Spotify playlist
+            </a>{" "}
+            of all the songs I&apos;ve rated as <i>Perfect.</i>
           </p>
           <p className="mb-5 text-xl font-light text-gray-50">
             Thanks for visiting!
