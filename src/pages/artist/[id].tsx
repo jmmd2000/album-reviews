@@ -104,7 +104,9 @@ interface AlbumReviewChartProps {
 const AlbumReviewChart = (props: AlbumReviewChartProps) => {
   const { reviews } = props;
 
-  const data = reviews.map((review, index) => ({
+  const sortedReviews = reviews.sort((a, b) => a.release_year - b.release_year);
+
+  const data = sortedReviews.map((review, index) => ({
     id: index,
     url: parseImageURL(review.image_urls), // Used for the X-axis
     review_score: review.review_score, // Used for the Y-axis
