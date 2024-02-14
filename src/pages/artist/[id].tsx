@@ -8,12 +8,9 @@ import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
 import Head from "next/head";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -141,7 +138,7 @@ interface CustomTickProps {
   x: number;
   y: number;
   payload: {
-    value: string; // Adjust according to your data, could be number or string
+    value: string;
     coordinate: number;
     index?: number;
     offset?: number;

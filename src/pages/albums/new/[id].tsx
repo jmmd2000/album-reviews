@@ -1,35 +1,32 @@
 //! This file is actually disgusting, held together with duct tape and paperclips.
 //- URGENTLY needs a tidy up and refactor.
+//!!!!!! RIP INTO THIS
 
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
 import { type Id, toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  type AlbumWithExtras,
-  type ReviewedTrack,
-  // type SpotifyImage,
-} from "~/types";
+import { type AlbumWithExtras, type ReviewedTrack } from "~/types";
 import { api } from "~/utils/api";
 import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
 import Head from "next/head";
-// import { useAuthContext } from "~/context/AuthContext";
 
 export default function NewAlbumForm() {
-  // const [token, setToken] = useState("");
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
-  // const [images, setImages] = useState<SpotifyImage[]>([]);
-  // const [artistID, setArtistID] = useState("");
   const { token } = useTokenContext();
+  useEffect(() => {
+    console.log("token straight away", token);
+  }, [token]);
   // const { auth } = useAuthContext();
   const router = useRouter();
   const albumID = router.query.id as string;
+  console.log("albumID", router.query.id);
   let creatingToast: Id | null = null;
   let updatingToast: Id | null = null;
   let deletingToast: Id | null = null;
@@ -41,9 +38,9 @@ export default function NewAlbumForm() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
-    //console.log("review", review);
-    //console.log("isLoading", isLoading);
-    //console.log("reviewExists", reviewExists);
+    console.log("review", review);
+    // console.log("isLoading", isLoading);
+    console.log("reviewExists", reviewExists);
     if (reviewExists) {
       if (review?.scored_tracks) {
         setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
@@ -52,74 +49,46 @@ export default function NewAlbumForm() {
     }
   }, [reviewExists, checkingIfExists]);
 
+  // const { refetch: fetchAlbumInfo } = api.spotify.getAlbumDetails.useQuery(
+  //   {
+  //     id: albumID,
+  //     accessToken: token,
+  //   },
+  //   {
+  //     enabled: false,
+  //     retry: false,
+  //     refetchOnWindowFocus: false,
+  //     refetchOnMount: false,
+  //     refetchOnReconnect: false,
+  //   },
+  // );
+
+  const {
+    data: albumInfo,
+    isError,
+    // isLoading,
+    isSuccess,
+  } = api.spotify.getAlbumDetails.useQuery({
+    id: albumID,
+    accessToken: token,
+  });
+
   useEffect(() => {
-    //console.log("albumID is:", albumID);
-  }, [albumID]);
-
-  const { refetch: fetchAlbumInfo } = api.spotify.getAlbumDetails.useQuery(
-    {
-      id: albumID,
-      accessToken: token,
-    },
-    {
-      enabled: false,
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    },
-  );
-
-  useEffect(() => {
-    async function getDetails() {
-      //* If there is a token saved in state, try to refetch the search results.
-      if (token !== "" && albumID !== undefined && !reviewExists) {
-        const { data, isLoading, isSuccess, isError } = await fetchAlbumInfo();
-
-        //* Handle loading state
-        if (isLoading) {
-          //console.log("loading");
-        }
-
-        //* If the search results are successfully fetched, and are not undefined, save them in state.
-        if (isSuccess) {
-          if (data !== undefined) {
-            setAlbumDetails(data);
-          }
-        }
-
-        //* If there is an error, throw it.
-        if (isError) {
-          toast.error("Error fetching album data.", {
-            progressStyle: {
-              backgroundColor: "#DC2626",
-            },
-          });
-          throw new Error("Error fetching album data.");
-        }
-      } else {
-        toast.error("No access token.", {
-          progressStyle: {
-            backgroundColor: "#DC2626",
-          },
-        });
-        throw new Error("No access token.");
-      }
+    //* If the query is successful and the albumInfo is not undefined, set the albumDetails state.
+    if (isSuccess && albumInfo !== undefined) {
+      setAlbumDetails(albumInfo);
     }
 
-    getDetails()
-      .then(() => {
-        //console.log("done");
-        // console.log("albumDetails", albumDetails);
-        // if (albumDetails?.artists[0] !== undefined) {
-        //   console.log("DING DING DING", albumDetails.artists[0].id);
-        //   setArtistID(albumDetails.artists[0].id);
-        // }
-      })
-      .catch(() => {
-        //console.log(error.message);
+    //* If there is an error, throw it.
+    if (isError) {
+      toast.error("Error fetching album data.", {
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
       });
-  }, [token, albumID]);
+      throw new Error("Error fetching album data.");
+    }
+  }, [isSuccess, isError, albumInfo]);
 
   const album = albumDetails?.album;
 
@@ -142,7 +111,6 @@ export default function NewAlbumForm() {
       });
     },
     onError: () => {
-      // console.log("error on create", error);
       toast.update(creatingToast!, {
         render: "Error creating review.",
         type: "error",
@@ -360,13 +328,11 @@ export default function NewAlbumForm() {
         <title>Edit: {album?.name}</title>
       </Head>
       <div className="mx-auto mt-12 flex w-full flex-col items-center justify-center sm:w-[70%]">
-        {album === undefined ? (
-          <Loader />
-        ) : (
+        {album ? (
           <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
             <img
-              src={album?.images[1]?.url}
-              alt={album?.name}
+              src={album.images[1]?.url}
+              alt={album.name}
               className="aspect-square w-[250px]"
             />
             <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
@@ -375,10 +341,11 @@ export default function NewAlbumForm() {
               </h1>
 
               <ArtistProfile
-                artistID={album.artists[0]?.id}
+                artistID={album.artists[0]!.id}
                 token={token}
-                artistName={album?.artists[0]?.name}
+                artistName={album.artists[0]!.name}
               />
+
               <div className="relative mt-4">
                 <p className="text-base text-gray-500">
                   {album?.total_tracks + " tracks"}
@@ -397,6 +364,8 @@ export default function NewAlbumForm() {
               </div>
             )}
           </div>
+        ) : (
+          <Loader />
         )}
 
         <ReviewContentInput

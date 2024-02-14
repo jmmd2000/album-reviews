@@ -136,14 +136,13 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
   return (
     <>
       {reviewedArtists && (
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row items-center gap-2">
           <input
             type="text"
             className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] md:w-80"
             placeholder="Filter by artist name..."
             onChange={(e) => {
               const filterText = e.target.value;
-              // console.log(filterText.length);
               if (filterText.length === 0) {
                 setReviewedArtists(artists);
               } else {
@@ -199,6 +198,9 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
               # of reviews desc.
             </option>
           </select>
+          <p className="ml-auto text-[#d2d2d3a8]">
+            {reviewedArtists.length} artists
+          </p>
         </div>
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">

@@ -12,6 +12,7 @@ import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
 import Head from "next/head";
+import { VisibilityObserver } from "~/components/VisibilityObserver";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
@@ -245,7 +246,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   return (
     <>
       {reviewedAlbums && controls && (
-        <div className="flex w-full flex-row gap-2 ">
+        <div className="flex w-full flex-row items-center gap-2">
           <input
             type="text"
             className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
@@ -308,6 +309,9 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
               Year desc.
             </option>
           </select>
+          <p className="ml-auto text-[#d2d2d3a8]">
+            {albumGroup.length} reviews
+          </p>
         </div>
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
@@ -324,42 +328,52 @@ function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
   if (album.hasOwnProperty("album_type")) {
     const spotifyAlbum = album as SpotifyAlbum;
     return (
-      <AlbumCard
-        spotify_id={spotifyAlbum.id}
-        key={spotifyAlbum.id}
-        name={spotifyAlbum.name}
-        release_date={spotifyAlbum.release_date}
-        image_url={spotifyAlbum.images[1]?.url}
-        artist={{
-          name: spotifyAlbum.artists[0]?.name,
-          spotify_id: spotifyAlbum.artists[0]?.id,
-        }}
-      />
+      <VisibilityObserver key={spotifyAlbum.id}>
+        {(isVisible) => (
+          <AlbumCard
+            spotify_id={spotifyAlbum.id}
+            key={spotifyAlbum.id}
+            name={spotifyAlbum.name}
+            release_date={spotifyAlbum.release_date}
+            image_url={spotifyAlbum.images[1]?.url}
+            artist={{
+              name: spotifyAlbum.artists[0]?.name,
+              spotify_id: spotifyAlbum.artists[0]?.id,
+            }}
+            isVisible={isVisible}
+          />
+        )}
+      </VisibilityObserver>
     );
   } else if (album.hasOwnProperty("spotify_id")) {
     const albumReview = album as AlbumReview;
     const imageURL = JSON.parse(albumReview.image_urls) as SpotifyImage[];
     return (
-      <AlbumCard
-        spotify_id={albumReview.spotify_id}
-        key={albumReview.spotify_id}
-        name={albumReview.name}
-        release_year={albumReview.release_year}
-        image_url={imageURL[1]?.url}
-        artist={{
-          name: albumReview.artist ? albumReview.artist.name : undefined,
-          spotify_id: albumReview.artist
-            ? albumReview.artist.spotify_id
-            : undefined,
-        }}
-        score={albumReview.review_score}
-      />
+      <VisibilityObserver key={albumReview.spotify_id}>
+        {(isVisible) => (
+          <AlbumCard
+            spotify_id={albumReview.spotify_id}
+            key={albumReview.spotify_id}
+            name={albumReview.name}
+            release_year={albumReview.release_year}
+            image_url={imageURL[1]?.url}
+            artist={{
+              name: albumReview.artist ? albumReview.artist.name : undefined,
+              spotify_id: albumReview.artist
+                ? albumReview.artist.spotify_id
+                : undefined,
+            }}
+            score={albumReview.review_score}
+            isVisible={isVisible}
+          />
+        )}
+      </VisibilityObserver>
     );
   }
 }
 
 // type AlbumReview = RouterOutputs["album"]["getAll"][number];
-export const AlbumCard = (props: {
+interface AlbumCardProps {
   spotify_id: string;
   name: string;
   release_date?: string;
@@ -370,22 +384,26 @@ export const AlbumCard = (props: {
     spotify_id: string | undefined;
   };
   score?: number;
-}) => {
+  isVisible?: boolean;
+}
+
+export const AlbumCard = (props: AlbumCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
   const [scrollAnimation, setScrollAnimation] = useState("");
 
   //* Get just the year from the release date
   let year = 0;
-  let href = "";
+  let albumLink = "";
   if (props.release_date) {
     const date = new Date(props.release_date);
     year = date.getFullYear();
-    href = `/albums/new/${props.spotify_id}`;
+    albumLink = `/albums/new/${props.spotify_id}`;
   } else if (props.release_year) {
     year = props.release_year;
-    href = `/album/${props.spotify_id}`;
+    albumLink = `/album/${props.spotify_id}`;
   }
+  const artistLink = `/artist/${props.artist?.spotify_id}`;
 
   //* Apply custom marquee scroll animation to albums with names longer than the card width
   useEffect(() => {
@@ -403,8 +421,12 @@ export const AlbumCard = (props: {
     return () => window.removeEventListener("resize", checkOverflow);
   }, []);
 
+  if (!props.isVisible) {
+    return null;
+  }
+
   return (
-    <Link href={href}>
+    <Link href={albumLink}>
       <div
         className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full"
         ref={cardRef}
@@ -427,9 +449,12 @@ export const AlbumCard = (props: {
           <div className="mt-1 flex items-center gap-1">
             {props.artist?.name ? (
               <>
-                <p className="text-xs font-medium text-[#717171]">
+                <Link
+                  className="text-xs font-medium text-[#717171] transition hover:text-[#D2D2D3] hover:underline"
+                  href={artistLink}
+                >
                   {props.artist.name}
-                </p>
+                </Link>
                 <p className="text-xs font-medium text-[#717171]">-</p>
               </>
             ) : null}

@@ -230,6 +230,7 @@ export const spotifyRouter = createTRPCRouter({
     .query(async (input) => {
       const id = input.input.id;
       const accessToken = input.input.accessToken;
+      console.log({ id, accessToken });
 
       const searchParamaters = {
         method: "GET",
@@ -252,9 +253,10 @@ export const spotifyRouter = createTRPCRouter({
           formatted_runtime: getTotalDuration(data),
           formatted_release_date: formatDate(data.release_date),
         };
+        console.log(fullData);
         return fullData;
       } catch (err) {
-        // console.log(err, "ERROR IN GET ALBUM DETAILS");
+        console.log(err, "ERROR IN GET ALBUM DETAILS");
       }
     }),
 
@@ -290,6 +292,67 @@ export const spotifyRouter = createTRPCRouter({
         return image;
       } catch (err) {
         //console.log(err, "ERROR IN GET ARTIST IMAGE FROM SPOTIFY");
+      }
+    }),
+
+  //* Checks to see if the artist is in the database, if they are, take the image from there.
+  //* If they're not, get the image from Spotify.
+  getArtistImage: publicProcedure
+    .input(z.object({ id: z.string(), accessToken: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const artist = (await ctx.prisma.artist.findUnique({
+        where: {
+          spotify_id: input.id,
+        },
+      })) as ReviewedArtist;
+
+      console.log(artist, "ARTIST IN GET ARTIST IMAGE");
+
+      if (artist) {
+        const images = JSON.parse(artist.image_urls) as SpotifyImage[];
+        const image =
+          images[2] === undefined
+            ? images[1] === undefined
+              ? images[0] === undefined
+                ? null
+                : images[0].url
+              : images[1].url
+            : images[2].url;
+        return {
+          image,
+          fromSpotify: false,
+        };
+      } else {
+        const searchParamaters = {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + input.accessToken,
+          },
+        };
+
+        try {
+          const response: Response = await fetch(
+            "https://api.spotify.com/v1/artists/" + input.id,
+            searchParamaters,
+          );
+          // return response.json();
+          const data = (await response.json()) as SpotifyArtist;
+          const image =
+            data.images[2] === undefined
+              ? data.images[1] === undefined
+                ? data.images[0] === undefined
+                  ? null
+                  : data.images[0].url
+                : data.images[1].url
+              : data.images[2].url;
+          return {
+            image,
+            fromSpotify: true,
+          };
+        } catch (err) {
+          //console.log(err, "ERROR IN GET ARTIST IMAGE FROM SPOTIFY");
+        }
       }
     }),
 
@@ -708,6 +771,7 @@ export const spotifyRouter = createTRPCRouter({
 
   //* This returns a specific album review by its spotify id
   getReviewById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
+    console.log(input);
     const review = ctx.prisma.reviewedAlbum.findUnique({
       where: {
         spotify_id: input,
@@ -716,6 +780,7 @@ export const spotifyRouter = createTRPCRouter({
         artist: true,
       },
     });
+    console.log(review);
     return review;
   }),
 

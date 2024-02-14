@@ -19,12 +19,14 @@ import { api } from "~/utils/api";
 import Link from "next/link";
 import { useAuthContext } from "~/context/AuthContext";
 import Head from "next/head";
+import { useTokenContext } from "~/context/TokenContext";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
   const [images, setImages] = useState<SpotifyImage[]>([]);
   const { auth } = useAuthContext();
+  const { token } = useTokenContext();
 
   const router = useRouter();
   const albumID = router.query.id as string;
@@ -40,7 +42,6 @@ export default function AlbumDetail() {
   } = api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
-    //console.log("album", album);
     if (isSuccess) {
       setTracks(JSON.parse(album!.scored_tracks) as ReviewedTrack[]);
       setImages(JSON.parse(album!.image_urls) as SpotifyImage[]);
@@ -54,13 +55,11 @@ export default function AlbumDetail() {
         <title>{album?.name}</title>
       </Head>
       <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
-        {album === undefined ? (
-          <Loader />
-        ) : (
+        {album ? (
           <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
             <img
               src={images[1]?.url}
-              alt={album?.name}
+              alt={album.name}
               className="aspect-square w-44 sm:w-[250px]"
             />
             <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
@@ -69,27 +68,29 @@ export default function AlbumDetail() {
               </h1>
 
               <ArtistProfile
-                image_url={album?.artist.image_urls}
-                artistName={album?.artist.name}
-                artistID={album?.artist.spotify_id}
+                artistName={album.artist.name}
+                artistID={album.artist.spotify_id}
+                token={token}
               />
               <div className="relative mt-4">
                 <p className="text-base text-gray-500">
                   {tracks.length + " tracks"}
                 </p>
-                <p className="text-base text-gray-500">{album?.runtime}</p>
-                <p className="text-base text-gray-500">{album?.release_date}</p>
+                <p className="text-base text-gray-500">{album.runtime}</p>
+                <p className="text-base text-gray-500">{album.release_date}</p>
               </div>
             </div>
             {album?.review_score && (
               <div className="mt-4 sm:mt-0">
                 <RatingChip
-                  ratingNumber={Math.round(album?.review_score)}
+                  ratingNumber={Math.round(album.review_score)}
                   form="label"
                 />
               </div>
             )}
           </div>
+        ) : (
+          <Loader />
         )}
 
         <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
@@ -129,65 +130,23 @@ export default function AlbumDetail() {
 }
 
 //* This displays the artist name and image
-//! This queries the Spotify API for the artist image even though we already have it in the database
-//- FIX THIS
-export const ArtistProfile = (props: {
-  artistID?: string | undefined;
-  token?: string;
-  image_url?: string;
-  artistName: string | undefined;
-}) => {
-  const [artistImageURL, setArtistImageURL] = useState("");
-  const {
-    data: imageURL,
-    isLoading,
-    isSuccess,
-    refetch: refetchImage,
-  } = api.spotify.getArtistImageFromSpotify.useQuery(
-    {
-      id: props.artistID!,
-      accessToken: props.token!,
-    },
-    {
-      enabled: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    },
-  );
+interface ArtistProfileProps {
+  artistID: string;
+  token: string;
+  artistName: string;
+}
 
-  useEffect(() => {
-    async function fetchImage() {
-      if (props.artistID && props.token) {
-        await refetchImage();
-        if (isLoading) {
-          //console.log("loading url");
-        }
-
-        if (isSuccess && imageURL) {
-          setArtistImageURL(imageURL);
-        }
-      } else if (props.image_url) {
-        const urls = JSON.parse(props.image_url) as SpotifyImage[];
-        setArtistImageURL(urls[2]!.url);
-      }
-    }
-    void fetchImage();
-  }, [
-    imageURL,
-    isLoading,
-    isSuccess,
-    props.artistID,
-    props.image_url,
-    props.token,
-    refetchImage,
-  ]);
+export const ArtistProfile = (props: ArtistProfileProps) => {
+  const { data: imageData } = api.spotify.getArtistImage.useQuery({
+    id: props.artistID,
+    accessToken: props.token,
+  });
 
   return (
     <div className="flex items-center gap-2">
-      {artistImageURL ? (
+      {imageData?.image ? (
         <img
-          src={artistImageURL}
+          src={imageData.image}
           alt={props.artistName}
           className="aspect-square w-[35px]"
         />
@@ -195,25 +154,28 @@ export const ArtistProfile = (props: {
         <Loader />
       )}
 
-      {props.image_url ? (
+      {imageData?.fromSpotify ? (
+        <p className="font-base text-md text-gray-300">{props.artistName}</p>
+      ) : (
         <Link
           href={`/artist/${props.artistID}`}
           className="font-base text-md text-gray-300 hover:underline"
         >
           {props.artistName}
         </Link>
-      ) : (
-        <p className="font-base text-md text-gray-300">{props.artistName}</p>
       )}
     </div>
   );
 };
 
 //* This displays the best / worst song
-const BestWorst = (props: {
+
+interface BestWorstProps {
   best: string | undefined;
   worst: string | undefined;
-}) => {
+}
+
+const BestWorst = (props: BestWorstProps) => {
   return (
     <div className="mt-4 flex flex-col gap-4 sm:mt-8 sm:flex-row sm:gap-8">
       <div className="flex items-center gap-2">

@@ -27,7 +27,7 @@ export function useTokenContext() {
 
 // Create the TokenProvider component to wrap your app with
 export function TokenProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string>("initialValue");
+  const [token, setToken] = useState<string>("");
 
   // Fetches the access token to be used with queries.
   // Disabled by default, runs once on mount.
@@ -50,6 +50,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     // Function to retrieve the token and its expiration time from local storage
     function getTokenAndExpirationFromLocalStorage() {
       const storedToken = localStorage.getItem("accessToken");
+      console.log("Stored token is: ", storedToken);
       const storedExpiration = localStorage.getItem("tokenExpiration");
       // if (storedToken && storedExpiration) {
       //   console.log("Stored token is: ", storedToken);
