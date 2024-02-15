@@ -50,7 +50,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     // Function to retrieve the token and its expiration time from local storage
     function getTokenAndExpirationFromLocalStorage() {
       const storedToken = localStorage.getItem("accessToken");
-      console.log("Stored token is: ", storedToken);
+      // console.log("Stored token is: ", storedToken);
       const storedExpiration = localStorage.getItem("tokenExpiration");
       // if (storedToken && storedExpiration) {
       //   console.log("Stored token is: ", storedToken);

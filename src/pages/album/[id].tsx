@@ -106,7 +106,7 @@ export default function AlbumDetail() {
           {tracks.map((track, index) => (
             <TrackCard
               key={track.track_id}
-              trackNumber={index}
+              trackNumber={index + 1}
               name={track.track_name}
               artists={track.track_artist}
               duration={track.track_duration}
@@ -199,7 +199,7 @@ const BestWorst = (props: BestWorstProps) => {
 };
 
 export const TrackCard = (props: {
-  trackNumber: number;
+  trackNumber?: number;
   name: string;
   trackID: string;
   artists: ReviewedTrackArtist[];
@@ -223,13 +223,15 @@ export const TrackCard = (props: {
   const { trackNumber, name, artists, duration, rating, select, trackID } =
     props;
 
+  // console.log(trackNumber, name);
+
   return (
     <div className="mx-2 flex h-[50px] flex-row justify-between gap-2 sm:mx-0">
       <div className="flex w-full items-center justify-between rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-2 text-sm text-[#D2D2D3] shadow-lg sm:p-3 sm:text-base">
         <div className="flex w-full flex-row gap-2 overflow-hidden">
-          <p className="">{trackNumber + 1 + "."}</p>
+          {trackNumber && <p className="">{trackNumber + "."}</p>}
           {/* //- Change this to show all artists on bigger screens, but remove main artist on smaller */}
-          <p className="inline-block w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap sm:w-full">
+          <p className="inline-block max-w-[380px] overflow-hidden overflow-ellipsis whitespace-nowrap sm:w-full">
             {removeFeaturedArtist(name)}
           </p>
         </div>

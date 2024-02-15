@@ -11,7 +11,7 @@ export const Layout = (props: PropsWithChildren) => {
     <>
       <Navbar />
       <main>{props.children}</main>
-      {/* <Analytics /> */}
+      <Analytics />
     </>
   );
 };

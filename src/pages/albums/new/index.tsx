@@ -11,6 +11,7 @@ import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
+import { toast } from "react-toastify";
 import Head from "next/head";
 import { VisibilityObserver } from "~/components/VisibilityObserver";
 
@@ -35,38 +36,14 @@ export default function NewAlbumPage() {
     },
   );
 
-  // const { data } = api.spotify.getAll.useQuery();
-  // console.log(data);
-
-  // useEffect(() => {
-  //   // Fetches token and saves it in state.
-  //   async function getToken() {
-  //     const { data, isSuccess, isError } = await retryFetch();
-
-  //     // If the token is successfully fetched, and is not undefined, save it in state.
-  //     if (isSuccess) {
-  //       if (data !== undefined) {
-  //         updateToken(data.access_token);
-  //       }
-  //     }
-
-  //     // If there is an error, throw it.
-  //     if (isError) {
-  //       throw new Error("Error fetching access token");
-  //     }
-  //   }
-
-  //   getToken()
-  //     .then(() => {
-  //       console.log("done");
-  //     })
-  //     .catch((error: Error) => {
-  //       console.log(error.message);
-  //     });
-  // }, []);
-
   //* Queries Spotify with a search term and saves the results in state.
   async function handleSearch() {
+    toast.error("Error fetching search results.", {
+      autoClose: 5000,
+      progressStyle: {
+        backgroundColor: "#DC2626",
+      },
+    });
     //* If there is a token saved in state, try to refetch the search results.
     if (token !== "") {
       const { data, isLoading, isSuccess, isError } = await refetchResults();
@@ -100,7 +77,12 @@ export default function NewAlbumPage() {
         //console.log("done");
       })
       .catch(() => {
-        //console.log(error.message);
+        toast.error("Error fetching search results.", {
+          autoClose: 5000,
+          progressStyle: {
+            backgroundColor: "#DC2626",
+          },
+        });
       });
   };
 
@@ -246,70 +228,72 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   return (
     <>
       {reviewedAlbums && controls && (
-        <div className="flex w-full flex-row items-center gap-2">
-          <input
-            type="text"
-            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
-            placeholder="Filter by album name, artist or year..."
-            onChange={(e) => {
-              const filterText = e.target.value;
-              // console.log(filterText.length);
-              if (filterText.length === 0) {
-                setAlbumGroup(reviewedAlbums);
-              } else {
-                const filteredAlbums = filterAlbums(filterText);
-                setAlbumGroup(filteredAlbums);
-              }
-            }}
-          />
-          <select
-            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base "
-            onChange={(e) => sortAlbums(e.target.value)}
-          >
-            <option
-              value="all"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+        <div className="flex flex-col items-center justify-center gap-3 md:flex-row">
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="text"
+              className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
+              placeholder="Filter by album name, artist or year..."
+              onChange={(e) => {
+                const filterText = e.target.value;
+                // console.log(filterText.length);
+                if (filterText.length === 0) {
+                  setAlbumGroup(reviewedAlbums);
+                } else {
+                  const filteredAlbums = filterAlbums(filterText);
+                  setAlbumGroup(filteredAlbums);
+                }
+              }}
+            />
+            <select
+              className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base "
+              onChange={(e) => sortAlbums(e.target.value)}
             >
-              All
-            </option>
-            <option
-              value="album-az"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Album A-Z
-            </option>
-            <option
-              value="album-za"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Album Z-A
-            </option>
-            <option
-              value="score-asc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Score asc.
-            </option>
-            <option
-              value="score-desc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Score desc.
-            </option>
-            <option
-              value="year-asc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Year asc.
-            </option>
-            <option
-              value="year-desc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Year desc.
-            </option>
-          </select>
-          <p className="ml-auto text-[#d2d2d3a8]">
+              <option
+                value="all"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                All
+              </option>
+              <option
+                value="album-az"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Album A-Z
+              </option>
+              <option
+                value="album-za"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Album Z-A
+              </option>
+              <option
+                value="score-asc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Score asc.
+              </option>
+              <option
+                value="score-desc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Score desc.
+              </option>
+              <option
+                value="year-asc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Year asc.
+              </option>
+              <option
+                value="year-desc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Year desc.
+              </option>
+            </select>
+          </div>
+          <p className="text-[#d2d2d3a8] md:ml-auto">
             {albumGroup.length} reviews
           </p>
         </div>

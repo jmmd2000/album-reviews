@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { RatingChip } from "~/components/RatingChip";
+import { RatingChip, getRatingString } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
-import { type AlbumReview, type SpotifyImage } from "~/types";
+import { ReviewedTrack, type AlbumReview, type SpotifyImage } from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
 import Head from "next/head";
@@ -15,6 +15,8 @@ import {
   LineChart,
   ResponsiveContainer,
 } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { TrackCard } from "../album/[id]";
 
 export default function ArtistDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -84,11 +86,16 @@ export default function ArtistDetail() {
           </div>
         )}
       </div>
-      <div className="mx-auto mt-12 w-full">
-        <AlbumReviewChart reviews={albums} />
-      </div>
-      <div className="mx-auto mt-12 w-full">
-        <AlbumGrid reviewedAlbums={albums} />
+      <div className="flex flex-col gap-8">
+        <div className="mx-auto mt-12 w-full">
+          <SongRanking albums={albums} />
+        </div>
+        <div className="mx-auto mt-12 w-full">
+          <AlbumReviewChart reviews={albums} />
+        </div>
+        <div className="mx-auto my-12 w-full">
+          <AlbumGrid reviewedAlbums={albums} />
+        </div>
       </div>
     </>
   );
@@ -111,7 +118,6 @@ const AlbumReviewChart = (props: AlbumReviewChartProps) => {
 
   function parseImageURL(urls: string) {
     const url = JSON.parse(urls) as SpotifyImage[];
-    console.log("url", url[2]!.url);
     return url[2]!.url;
   }
 
@@ -150,7 +156,6 @@ interface CustomTickProps {
 
 const CustomTick = (props: CustomTickProps) => {
   const { x, y, payload } = props;
-  console.log("payload", payload.value);
   return (
     <foreignObject x={x - 32} y={y} width="64" height="64">
       <img
@@ -159,5 +164,104 @@ const CustomTick = (props: CustomTickProps) => {
         className="h-12 w-12 object-cover md:h-16 md:w-16"
       />
     </foreignObject>
+  );
+};
+
+interface SongRankingProps {
+  albums: AlbumReview[];
+}
+
+const SongRanking = ({ albums }: SongRankingProps) => {
+  const songsByRatingThenAlbum = useMemo(() => {
+    const songs = albums.flatMap((album) =>
+      (JSON.parse(album.scored_tracks) as ReviewedTrack[]).map((song) => ({
+        ...song,
+        albumName: album.name,
+        albumArt: album.image_urls,
+      })),
+    );
+
+    return songs.reduce(
+      (acc, song) => {
+        const { rating, album_id } = song;
+        if (!acc[rating]) acc[rating] = {};
+        if (!acc[rating]![album_id]) {
+          acc[rating]![album_id] = {
+            albumName: song.albumName,
+            albumArt: song.albumArt,
+            songs: [],
+          };
+        }
+        acc[rating]![album_id]!.songs.push(song);
+        return acc;
+      },
+      {} as Record<
+        number,
+        Record<
+          string,
+          { albumName: string; albumArt: string; songs: ReviewedTrack[] }
+        >
+      >,
+    );
+  }, [albums]);
+
+  function parseImageURL(urls: string) {
+    const url = JSON.parse(urls) as SpotifyImage[];
+    return url[1]!.url;
+  }
+
+  return (
+    <Tabs
+      defaultValue="10"
+      className="m-auto flex w-3/4 flex-col justify-center"
+    >
+      <TabsList>
+        {[...Array(11).keys()].reverse().map((rating) => (
+          <TabsTrigger key={rating} value={rating.toString()}>
+            {getRatingString(rating)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
+      {[...Array(11).keys()].reverse().map((rating) => {
+        const albumsAtRating = songsByRatingThenAlbum[rating] ?? {};
+        return (
+          <TabsContent value={rating.toString()} key={rating}>
+            {Object.keys(albumsAtRating).length > 0 ? (
+              Object.entries(albumsAtRating).map(
+                ([albumId, { albumName, albumArt, songs }]) => (
+                  <div key={albumId} className="mt-8 flex flex-col gap-1">
+                    <div className="mb-2 flex items-center gap-2">
+                      <img
+                        src={parseImageURL(albumArt)}
+                        alt={`Album art for ${albumName}`}
+                        className="aspect-square h-24 object-cover"
+                      />
+                      <h3 className="text-lg font-semibold text-[#D2D2D3]">
+                        {albumName}
+                      </h3>
+                    </div>
+                    {songs.map((song, index) => (
+                      <TrackCard
+                        key={index}
+                        artists={song.track_artist}
+                        duration={song.track_duration}
+                        name={song.track_name}
+                        trackID={song.track_id}
+                        rating={song.rating}
+                      />
+                    ))}
+                  </div>
+                ),
+              )
+            ) : (
+              <p className="m-10 text-center text-[#D2D2D3]">
+                No songs with this rating.
+              </p>
+            )}
+          </TabsContent>
+        );
+      })}
+    </Tabs>
   );
 };
