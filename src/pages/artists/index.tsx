@@ -136,69 +136,71 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
   return (
     <>
       {reviewedArtists && (
-        <div className="flex flex-row items-center gap-2">
-          <input
-            type="text"
-            className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] md:w-80"
-            placeholder="Filter by artist name..."
-            onChange={(e) => {
-              const filterText = e.target.value;
-              if (filterText.length === 0) {
-                setReviewedArtists(artists);
-              } else {
-                const filteredArtists = filterArtists(filterText);
-                setReviewedArtists(filteredArtists);
-              }
-            }}
-          />
-          <select
-            className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 "
-            onChange={(e) => sortArtists(e.target.value)}
-          >
-            <option
-              value="all"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+        <div className="flex flex-col items-center justify-center gap-3 md:flex-row">
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="text"
+              className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8] md:w-80"
+              placeholder="Filter by artist name..."
+              onChange={(e) => {
+                const filterText = e.target.value;
+                if (filterText.length === 0) {
+                  setReviewedArtists(artists);
+                } else {
+                  const filteredArtists = filterArtists(filterText);
+                  setReviewedArtists(filteredArtists);
+                }
+              }}
+            />
+            <select
+              className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 "
+              onChange={(e) => sortArtists(e.target.value)}
             >
-              All
-            </option>
-            <option
-              value="artist-az"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Artist A-Z
-            </option>
-            <option
-              value="artist-za"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Artist Z-A
-            </option>
-            <option
-              value="score-asc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Score asc.
-            </option>
-            <option
-              value="score-desc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              Score desc.
-            </option>
-            <option
-              value="num-reviews-asc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              # of reviews asc.
-            </option>
-            <option
-              value="num-reviews-desc"
-              className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
-            >
-              # of reviews desc.
-            </option>
-          </select>
-          <p className="ml-auto text-[#d2d2d3a8]">
+              <option
+                value="all"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                All
+              </option>
+              <option
+                value="artist-az"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Artist A-Z
+              </option>
+              <option
+                value="artist-za"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Artist Z-A
+              </option>
+              <option
+                value="score-asc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Score asc.
+              </option>
+              <option
+                value="score-desc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                Score desc.
+              </option>
+              <option
+                value="num-reviews-asc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                # of reviews asc.
+              </option>
+              <option
+                value="num-reviews-desc"
+                className="bg-zinc-900 bg-opacity-90 backdrop-blur-sm"
+              >
+                # of reviews desc.
+              </option>
+            </select>
+          </div>
+          <p className="text-[#d2d2d3a8] md:ml-auto">
             {reviewedArtists.length} artists
           </p>
         </div>

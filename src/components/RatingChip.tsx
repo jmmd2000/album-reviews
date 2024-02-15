@@ -198,7 +198,7 @@ function getTextColorClass(rating: string | number) {
   }
 }
 
-function getRatingString(rating: number) {
+export function getRatingString(rating: number) {
   switch (rating) {
     case 10:
       return "Perfect";

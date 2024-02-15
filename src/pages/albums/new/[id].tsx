@@ -1,11 +1,7 @@
-//! This file is actually disgusting, held together with duct tape and paperclips.
-//- URGENTLY needs a tidy up and refactor.
-//!!!!!! RIP INTO THIS
-
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from "next/router";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { useTokenContext } from "~/context/TokenContext";
@@ -20,53 +16,25 @@ export default function NewAlbumForm() {
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
   const { token } = useTokenContext();
-  useEffect(() => {
-    console.log("token straight away", token);
-  }, [token]);
-  // const { auth } = useAuthContext();
   const router = useRouter();
   const albumID = router.query.id as string;
-  console.log("albumID", router.query.id);
+  // console.log("albumID", router.query.id);
   let creatingToast: Id | null = null;
   let updatingToast: Id | null = null;
   let deletingToast: Id | null = null;
 
-  const {
-    data: review,
-    isLoading: checkingIfExists,
-    isSuccess: reviewExists,
-  } = api.spotify.getReviewById.useQuery(albumID);
+  const { data: review, isLoading: checkingIfExists } =
+    api.spotify.getReviewById.useQuery(albumID);
 
   useEffect(() => {
-    console.log("review", review);
-    // console.log("isLoading", isLoading);
-    console.log("reviewExists", reviewExists);
-    if (reviewExists) {
-      if (review?.scored_tracks) {
-        setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
-      }
-      // setImages(JSON.parse(review!.image_urls) as SpotifyImage[]);
+    if (review) {
+      setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
     }
-  }, [reviewExists, checkingIfExists]);
-
-  // const { refetch: fetchAlbumInfo } = api.spotify.getAlbumDetails.useQuery(
-  //   {
-  //     id: albumID,
-  //     accessToken: token,
-  //   },
-  //   {
-  //     enabled: false,
-  //     retry: false,
-  //     refetchOnWindowFocus: false,
-  //     refetchOnMount: false,
-  //     refetchOnReconnect: false,
-  //   },
-  // );
+  }, [review]);
 
   const {
     data: albumInfo,
     isError,
-    // isLoading,
     isSuccess,
   } = api.spotify.getAlbumDetails.useQuery({
     id: albumID,
@@ -237,15 +205,6 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    // const finalReview = {
-    //   album: album,
-    //   review_content: reviewContent,
-    //   best_song: bestSong,
-    //   worst_song: worstSong,
-    //   tracks: trackArray,
-    //   formatted_release_date: albumDetails?.formatted_release_date,
-    //   formatted_runtime: albumDetails?.formatted_runtime,
-    // };
 
     createNewReview({
       album: album!,
@@ -297,13 +256,6 @@ export default function NewAlbumForm() {
         rating: ratingValue,
       });
     });
-    // const finalReview = {
-    //   review_content: reviewContent,
-    //   best_song: bestSong,
-    //   worst_song: worstSong,
-    //   tracks: trackArray,
-    //   artist_id: review?.artist.spotify_id,
-    // };
 
     updateCurrentReview({
       review_content: reviewContent,

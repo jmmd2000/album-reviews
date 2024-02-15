@@ -230,7 +230,7 @@ export const spotifyRouter = createTRPCRouter({
     .query(async (input) => {
       const id = input.input.id;
       const accessToken = input.input.accessToken;
-      console.log({ id, accessToken });
+      // console.log({ id, accessToken });
 
       const searchParamaters = {
         method: "GET",
@@ -253,10 +253,10 @@ export const spotifyRouter = createTRPCRouter({
           formatted_runtime: getTotalDuration(data),
           formatted_release_date: formatDate(data.release_date),
         };
-        console.log(fullData);
+        // console.log(fullData);
         return fullData;
       } catch (err) {
-        console.log(err, "ERROR IN GET ALBUM DETAILS");
+        // console.log(err, "ERROR IN GET ALBUM DETAILS");
       }
     }),
 
@@ -306,7 +306,7 @@ export const spotifyRouter = createTRPCRouter({
         },
       })) as ReviewedArtist;
 
-      console.log(artist, "ARTIST IN GET ARTIST IMAGE");
+      // console.log(artist, "ARTIST IN GET ARTIST IMAGE");
 
       if (artist) {
         const images = JSON.parse(artist.image_urls) as SpotifyImage[];
@@ -771,7 +771,7 @@ export const spotifyRouter = createTRPCRouter({
 
   //* This returns a specific album review by its spotify id
   getReviewById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    console.log(input);
+    // console.log(input);
     const review = ctx.prisma.reviewedAlbum.findUnique({
       where: {
         spotify_id: input,
@@ -780,7 +780,7 @@ export const spotifyRouter = createTRPCRouter({
         artist: true,
       },
     });
-    console.log(review);
+    // console.log(review);
     return review;
   }),
 
