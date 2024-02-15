@@ -50,18 +50,18 @@ export default function ArtistDetail() {
       <Head>
         <title>{artist?.name}</title>
       </Head>
-      <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
+      <div className="mx-auto mt-12 flex w-full flex-col items-center md:w-[70%]">
         {artist === undefined ? (
           <Loader />
         ) : (
-          <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
+          <div className="flex w-full flex-col items-center justify-start gap-4 md:max-h-[250px] md:w-[80%] md:flex-row md:gap-12">
             <img
               src={images[1]?.url}
               alt={artist?.name}
-              className="aspect-square w-44 sm:w-[250px]"
+              className="aspect-square w-44 md:w-[250px]"
             />
-            <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
-              <h1 className="inline-block w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap text-xl font-bold text-white sm:w-full sm:text-3xl">
+            <div className="flex flex-col gap-2 md:mt-8 md:gap-4">
+              <h1 className="inline-block w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap text-xl font-bold text-white md:w-full md:text-3xl">
                 {artist?.name}
               </h1>
 
@@ -76,7 +76,7 @@ export default function ArtistDetail() {
               </div>
             </div>
             {artist?.average_score && (
-              <div className="mt-4 sm:mt-0">
+              <div className="mt-4 md:mt-0">
                 <RatingChip
                   ratingNumber={Math.round(artist?.average_score)}
                   form="label"
@@ -86,14 +86,14 @@ export default function ArtistDetail() {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-8">
-        <div className="mx-auto mt-12 w-full">
+      <div className="mt-12 space-y-14">
+        <div className="mx-auto w-full">
           <SongRanking albums={albums} />
         </div>
-        <div className="mx-auto mt-12 w-full">
+        <div className="mx-auto w-full">
           <AlbumReviewChart reviews={albums} />
         </div>
-        <div className="mx-auto my-12 w-full">
+        <div className="mx-auto w-full">
           <AlbumGrid reviewedAlbums={albums} />
         </div>
       </div>
@@ -122,7 +122,7 @@ const AlbumReviewChart = (props: AlbumReviewChartProps) => {
   }
 
   return (
-    <div className="m-auto flex w-3/4 justify-center rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition">
+    <div className="m-auto flex w-full justify-center rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-3/4">
       <ResponsiveContainer width="100%" height={300} className="-ml-[40px]">
         <LineChart
           width={1000}
@@ -213,7 +213,7 @@ const SongRanking = ({ albums }: SongRankingProps) => {
   return (
     <Tabs
       defaultValue="10"
-      className="m-auto flex w-3/4 flex-col justify-center"
+      className="m-auto flex w-full flex-col justify-center md:w-3/4"
     >
       <TabsList>
         {[...Array(11).keys()].reverse().map((rating) => (
@@ -235,7 +235,7 @@ const SongRanking = ({ albums }: SongRankingProps) => {
                       <img
                         src={parseImageURL(albumArt)}
                         alt={`Album art for ${albumName}`}
-                        className="aspect-square h-24 object-cover"
+                        className="ml-2 aspect-square h-24 object-cover md:ml-0"
                       />
                       <h3 className="text-lg font-semibold text-[#D2D2D3]">
                         {albumName}
