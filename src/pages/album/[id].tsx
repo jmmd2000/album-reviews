@@ -226,12 +226,12 @@ export const TrackCard = (props: {
   // console.log(trackNumber, name);
 
   return (
-    <div className="mx-2 flex h-[50px] flex-row justify-between gap-2 sm:mx-0">
+    <div className="mx-2 flex h-[50px] max-w-full flex-row justify-between gap-2 sm:mx-0">
       <div className="flex w-full items-center justify-between rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-2 text-sm text-[#D2D2D3] shadow-lg sm:p-3 sm:text-base">
         <div className="flex w-full flex-row gap-2 overflow-hidden">
           {trackNumber && <p className="">{trackNumber + "."}</p>}
           {/* //- Change this to show all artists on bigger screens, but remove main artist on smaller */}
-          <p className="inline-block max-w-[380px] overflow-hidden overflow-ellipsis whitespace-nowrap sm:w-full">
+          <p className="inline-block max-w-[200px] overflow-hidden overflow-ellipsis whitespace-nowrap sm:w-full md:max-w-[380px]">
             {removeFeaturedArtist(name)}
           </p>
         </div>

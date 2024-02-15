@@ -340,7 +340,7 @@ export default function NewAlbumForm() {
             ? album?.tracks.items.map((track, index) => (
                 <TrackCard
                   key={track.id}
-                  trackNumber={index}
+                  trackNumber={index + 1}
                   name={track.name}
                   artists={track.artists}
                   duration={track.duration_ms}
@@ -351,7 +351,7 @@ export default function NewAlbumForm() {
             : tracks.map((track, index) => (
                 <TrackCard
                   key={track.track_id}
-                  trackNumber={index}
+                  trackNumber={index + 1}
                   name={track.track_name}
                   artists={track.track_artist}
                   duration={track.track_duration}
