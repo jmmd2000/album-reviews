@@ -73,7 +73,7 @@ export default function Home() {
 
 const TopFourGrid = () => {
   const { data, isLoading, isSuccess, isError } =
-    api.spotify.getTopFourArtists.useQuery();
+    api.artist.getTopFourArtists.useQuery();
   useEffect(() => {
     if (isSuccess) {
       //console.log(data);

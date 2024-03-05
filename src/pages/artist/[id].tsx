@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { RatingChip, getRatingString } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
-import { ReviewedTrack, type AlbumReview, type SpotifyImage } from "~/types";
+import type { ReviewedTrack, AlbumReview, SpotifyImage } from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
 import Head from "next/head";
@@ -30,7 +30,7 @@ export default function ArtistDetail() {
     data: artist,
     // isLoading,
     isSuccess,
-  } = api.spotify.getArtistById.useQuery(artistID);
+  } = api.artist.getArtistById.useQuery(artistID);
 
   useEffect(() => {
     //console.log("artist", artist);

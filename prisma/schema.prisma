@@ -44,11 +44,14 @@ model Artist{
     leaderboard_position   Int?
 }
 
-model AccessToken {
+model BookmarkedAlbum {
     id                     Int             @id @default(autoincrement())
-    token                  String
-    expires_in             Int
-    created_at             Int?        
-    updated_at             Int?        
+    name                   String
+    spotify_id             String          @unique
+    image_url              String          @db.Text //JSON object of array of urls
+    artist_name            String
+    artist_spotify_id      String
+    release_year           Int
+    release_date           String
 }
 

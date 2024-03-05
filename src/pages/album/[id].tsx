@@ -39,7 +39,7 @@ export default function AlbumDetail() {
     data: album,
     // isLoading,
     isSuccess,
-  } = api.spotify.getReviewById.useQuery(albumID);
+  } = api.album.getReviewById.useQuery(albumID);
 
   useEffect(() => {
     if (isSuccess) {

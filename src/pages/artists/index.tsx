@@ -14,7 +14,7 @@ export default function ArtistsPage() {
     data: reviewedArtists,
     isSuccess,
     isError,
-  } = api.spotify.getAllArtists.useQuery();
+  } = api.artist.getAllArtists.useQuery();
 
   useEffect(() => {
     if (isSuccess) {

@@ -52,14 +52,19 @@ const Navbar = () => {
         <NavLink href="/albums" isActive={isActive("/albums")}>
           Albums
         </NavLink>
-        {auth && (
-          <NavLink href="/albums/new" isActive={isActive("/albums")}>
-            New
-          </NavLink>
-        )}
         <NavLink href="/artists" isActive={isActive("/artists")}>
           Artists
         </NavLink>
+        {auth && (
+          <>
+            <NavLink href="/albums/new" isActive={isActive("/albums/new")}>
+              New
+            </NavLink>
+            <NavLink href="/saved" isActive={isActive("/saved")}>
+              Saved
+            </NavLink>
+          </>
+        )}
       </div>
       {showPasswordInput && (
         <div className="ml-auto">

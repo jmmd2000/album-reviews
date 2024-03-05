@@ -11,9 +11,11 @@ import { type AlbumWithExtras, type ReviewedTrack } from "~/types";
 import { api } from "~/utils/api";
 import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
 import Head from "next/head";
+import { BookmarkButton } from ".";
 
 export default function NewAlbumForm() {
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
   const { token } = useTokenContext();
   const router = useRouter();
@@ -24,7 +26,21 @@ export default function NewAlbumForm() {
   let deletingToast: Id | null = null;
 
   const { data: review, isLoading: checkingIfExists } =
-    api.spotify.getReviewById.useQuery(albumID);
+    api.album.getReviewById.useQuery(albumID);
+
+  const {
+    mutate: toggleBookmarked,
+    // isLoading,
+    // isSuccess,
+    // isError,
+  } = api.album.toggleAlbumBookmark.useMutation();
+
+  const handleToggleBookmark = (spotify_id: string) => {
+    toggleBookmarked({
+      id: spotify_id,
+      accessToken: token,
+    });
+  };
 
   useEffect(() => {
     if (review) {
@@ -60,12 +76,21 @@ export default function NewAlbumForm() {
 
   const album = albumDetails?.album;
 
+  const { data: bookmarked } =
+    api.album.checkIfAlbumIsBookmarked.useQuery(albumID);
+
+  useEffect(() => {
+    if (bookmarked !== undefined) {
+      setIsBookmarked(bookmarked);
+    }
+  }, [bookmarked]);
+
   const {
     mutate: createNewReview,
     isLoading: loadingCreate,
     // isSuccess: successfulCreate,
     // isError: errorOnCreate,
-  } = api.spotify.createAlbumReview.useMutation({
+  } = api.album.createAlbumReview.useMutation({
     onSuccess: () => {
       // console.log("successful create", data);
       toast.update(creatingToast!, {
@@ -96,7 +121,7 @@ export default function NewAlbumForm() {
     isLoading: loadingUpdate,
     // isSuccess: successfulUpdate,
     // isError: errorOnUpdate,
-  } = api.spotify.updateAlbumReview.useMutation({
+  } = api.album.updateAlbumReview.useMutation({
     onSuccess: () => {
       toast.update(updatingToast!, {
         render: "Review updated successfully!",
@@ -126,7 +151,7 @@ export default function NewAlbumForm() {
     isLoading: loadingDelete,
     // isSuccess: successfulDelete,
     // isError: errorOnDelete,
-  } = api.spotify.deleteAlbumReview.useMutation({
+  } = api.album.deleteAlbumReview.useMutation({
     onSuccess: () => {
       toast.update(deletingToast!, {
         render: "Review deleted successfully!",
@@ -310,9 +335,17 @@ export default function NewAlbumForm() {
                 </p>
               </div>
             </div>
-            {review !== null && review !== undefined && (
+            {review !== null && review !== undefined ? (
               <div className="mt-4 sm:mt-0">
                 <RatingChip ratingNumber={review.review_score!} form="label" />
+              </div>
+            ) : (
+              <div>
+                <BookmarkButton
+                  onClick={handleToggleBookmark}
+                  spotify_id={album.id}
+                  bookmarked={isBookmarked}
+                />
               </div>
             )}
           </div>

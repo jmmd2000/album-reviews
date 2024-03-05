@@ -2,11 +2,7 @@
 import Link from "next/link";
 import { api } from "~/utils/api";
 import { useEffect, useRef, useState } from "react";
-import {
-  type AlbumReview,
-  type SpotifyAlbum,
-  type SpotifyImage,
-} from "src/types";
+import { type DisplayAlbum } from "src/types";
 import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
@@ -14,9 +10,10 @@ import ResponsiveImage from "~/components/ResponsiveImage";
 import { toast } from "react-toastify";
 import Head from "next/head";
 import { VisibilityObserver } from "~/components/VisibilityObserver";
+import { Bookmark, BookmarkX } from "lucide-react";
 
 export default function NewAlbumPage() {
-  const [searchResults, setSearchResults] = useState<SpotifyAlbum[]>([]);
+  const [searchResults, setSearchResults] = useState<DisplayAlbum[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const { token } = useTokenContext();
@@ -35,6 +32,10 @@ export default function NewAlbumPage() {
       refetchOnReconnect: false,
     },
   );
+
+  useEffect(() => {
+    console.log(searchResults);
+  }, [searchResults]);
 
   //* Queries Spotify with a search term and saves the results in state.
   async function handleSearch() {
@@ -57,7 +58,7 @@ export default function NewAlbumPage() {
       if (isSuccess) {
         if (data !== undefined) {
           setLoading(false);
-          setSearchResults(data.albums.items);
+          setSearchResults(data);
         }
       }
 
@@ -112,21 +113,10 @@ export default function NewAlbumPage() {
             Submit
           </button>
         </div>
-        {/* {
-        //* If there are search results, render them.
-        searchResults.length !== 0 ? (
-          <AlbumGrid albums={searchResults} />
-        ) : (
-          //* If there are no search results, render a message.
-          <h2 className="m-16 text-xl text-[#D2D2D3]">
-            Use the input to search for albums.
-          </h2>
-        )
-      } */}
         {loading ? (
           <Loader />
         ) : searchResults.length !== 0 ? (
-          <AlbumGrid searchedAlbums={searchResults} controls />
+          <AlbumGrid albums={searchResults} />
         ) : (
           <h2 className="m-16 text-xl text-[#D2D2D3]">
             Use the input to search for albums.
@@ -138,86 +128,80 @@ export default function NewAlbumPage() {
 }
 
 interface AlbumGridProps {
-  searchedAlbums?: SpotifyAlbum[];
-  reviewedAlbums?: AlbumReview[];
+  albums: DisplayAlbum[];
   controls?: boolean;
 }
 
-export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
-  const { searchedAlbums, reviewedAlbums, controls } = props;
-  const [albumGroup, setAlbumGroup] = useState<SpotifyAlbum[] | AlbumReview[]>(
-    [],
-  );
-
-  useEffect(() => {
-    //* Only show "albums" and "compilations" from Spotify, not "singles" etc.
-    if (searchedAlbums) {
-      const filteredAlbums = searchedAlbums.filter(
-        (album) =>
-          album.album_type === "album" || album.album_type === "compilation",
-      );
-      setAlbumGroup(filteredAlbums);
-    } else if (reviewedAlbums) {
-      setAlbumGroup(reviewedAlbums);
-    }
-  }, [searchedAlbums, reviewedAlbums]);
+export const AlbumGrid = (props: AlbumGridProps) => {
+  const { controls, albums } = props;
+  const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums);
+  const [sortKey, setSortKey] = useState("all");
 
   const filterAlbums = (filterText: string) => {
-    //* This can only be called from the select, which only shows when albumGroup is AlbumReview[]. We can safely assume everything is AlbumReview[].
-    const filteredAlbums: AlbumReview[] = (albumGroup as AlbumReview[]).filter(
-      (album) => {
-        const { name, artist, release_year } = album;
-        return (
-          name.toLowerCase().includes(filterText.toLowerCase()) ||
-          artist.name.toLowerCase().includes(filterText.toLowerCase()) ||
-          release_year.toString().includes(filterText)
-        );
-      },
-    );
+    const filteredAlbums: DisplayAlbum[] = albumGroup.filter((album) => {
+      const { name, artist_name, release_year } = album;
+      return (
+        name.toLowerCase().includes(filterText.toLowerCase()) ||
+        artist_name.toLowerCase().includes(filterText.toLowerCase()) ||
+        release_year.toString().includes(filterText)
+      );
+    });
 
     return filteredAlbums;
   };
 
+  useEffect(() => {
+    setAlbumGroup(albums);
+  }, [albums]);
+
   const sortAlbums = (sort: string) => {
     //* This can only be called from the select, which only shows when albumGroup is AlbumReview[]. We can safely assume everything is AlbumReview[].
-    let sortedAlbums: AlbumReview[] = [...(albumGroup as AlbumReview[])];
+    //* Also update the sortKey to force a rerender of the off-screen cards.
+    let sortedAlbums = [...albumGroup];
 
     switch (sort) {
       case "all":
-        sortedAlbums = reviewedAlbums!;
+        sortedAlbums = albums;
+        setSortKey("all");
         break;
       case "album-az":
         sortedAlbums = sortedAlbums.sort((a, b) =>
           a.name.localeCompare(b.name),
         );
+        setSortKey("album-az");
         break;
       case "album-za":
         sortedAlbums = sortedAlbums.sort((a, b) =>
           b.name.localeCompare(a.name),
         );
+        setSortKey("album-za");
         break;
       case "score-asc":
         sortedAlbums = sortedAlbums.sort(
-          (a, b) => a.review_score - b.review_score,
+          (a, b) => a.review_score! - b.review_score!,
         );
+        setSortKey("score-asc");
         break;
       case "score-desc":
         sortedAlbums = sortedAlbums.sort(
-          (a, b) => b.review_score - a.review_score,
+          (a, b) => b.review_score! - a.review_score!,
         );
+        setSortKey("score-desc");
         break;
       case "year-asc":
         sortedAlbums = sortedAlbums.sort(
           (a, b) => a.release_year - b.release_year,
         );
+        setSortKey("year-asc");
         break;
       case "year-desc":
         sortedAlbums = sortedAlbums.sort(
           (a, b) => b.release_year - a.release_year,
         );
+        setSortKey("year-desc");
         break;
       default:
-        sortedAlbums = reviewedAlbums!;
+        sortedAlbums = albums;
     }
 
     setAlbumGroup(sortedAlbums);
@@ -227,7 +211,7 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
   //- TODO: Improve this
   return (
     <>
-      {reviewedAlbums && controls && (
+      {albums && controls && (
         <div className="flex flex-col items-center justify-center gap-3 md:flex-row">
           <div className="flex flex-row items-center gap-2">
             <input
@@ -236,9 +220,8 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
               placeholder="Filter by album name, artist or year..."
               onChange={(e) => {
                 const filterText = e.target.value;
-                // console.log(filterText.length);
                 if (filterText.length === 0) {
-                  setAlbumGroup(reviewedAlbums);
+                  setAlbumGroup(albums);
                 } else {
                   const filteredAlbums = filterAlbums(filterText);
                   setAlbumGroup(filteredAlbums);
@@ -300,61 +283,31 @@ export const AlbumGrid: React.FC<AlbumGridProps> = (props) => {
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {albumGroup.length !== 0
-          ? albumGroup.map((album) => albumTypeCheck(album))
+          ? albumGroup.map((album) => (
+              <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
+                {(isVisible) => (
+                  <AlbumCard
+                    spotify_id={album.spotify_id}
+                    key={`${sortKey}-${album.spotify_id}`}
+                    name={album.name}
+                    release_date={album.release_year.toString()}
+                    image_url={album.image_url}
+                    artist={{
+                      name: album.artist_name,
+                      spotify_id: album.artist_spotify_id,
+                    }}
+                    isVisible={isVisible}
+                    bookmarked={album.bookmarked}
+                    score={album.review_score}
+                  />
+                )}
+              </VisibilityObserver>
+            ))
           : null}
       </div>
     </>
   );
 };
-
-//* Check if its a SpotifyAlbum or AlbumReview (if its from Spotify or from the database).
-function albumTypeCheck(album: SpotifyAlbum | AlbumReview) {
-  if (album.hasOwnProperty("album_type")) {
-    const spotifyAlbum = album as SpotifyAlbum;
-    return (
-      <VisibilityObserver key={spotifyAlbum.id}>
-        {(isVisible) => (
-          <AlbumCard
-            spotify_id={spotifyAlbum.id}
-            key={spotifyAlbum.id}
-            name={spotifyAlbum.name}
-            release_date={spotifyAlbum.release_date}
-            image_url={spotifyAlbum.images[1]?.url}
-            artist={{
-              name: spotifyAlbum.artists[0]?.name,
-              spotify_id: spotifyAlbum.artists[0]?.id,
-            }}
-            isVisible={isVisible}
-          />
-        )}
-      </VisibilityObserver>
-    );
-  } else if (album.hasOwnProperty("spotify_id")) {
-    const albumReview = album as AlbumReview;
-    const imageURL = JSON.parse(albumReview.image_urls) as SpotifyImage[];
-    return (
-      <VisibilityObserver key={albumReview.spotify_id}>
-        {(isVisible) => (
-          <AlbumCard
-            spotify_id={albumReview.spotify_id}
-            key={albumReview.spotify_id}
-            name={albumReview.name}
-            release_year={albumReview.release_year}
-            image_url={imageURL[1]?.url}
-            artist={{
-              name: albumReview.artist ? albumReview.artist.name : undefined,
-              spotify_id: albumReview.artist
-                ? albumReview.artist.spotify_id
-                : undefined,
-            }}
-            score={albumReview.review_score}
-            isVisible={isVisible}
-          />
-        )}
-      </VisibilityObserver>
-    );
-  }
-}
 
 // type AlbumReview = RouterOutputs["album"]["getAll"][number];
 interface AlbumCardProps {
@@ -369,12 +322,29 @@ interface AlbumCardProps {
   };
   score?: number;
   isVisible?: boolean;
+  bookmarked?: boolean;
 }
 
 export const AlbumCard = (props: AlbumCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
   const [scrollAnimation, setScrollAnimation] = useState("");
+
+  const { token } = useTokenContext();
+
+  const {
+    mutate: toggleBookmarked,
+    // isLoading,
+    // isSuccess,
+    // isError,
+  } = api.album.toggleAlbumBookmark.useMutation();
+
+  const handleToggleBookmark = (spotify_id: string) => {
+    toggleBookmarked({
+      id: spotify_id,
+      accessToken: token,
+    });
+  };
 
   //* Get just the year from the release date
   let year = 0;
@@ -385,7 +355,11 @@ export const AlbumCard = (props: AlbumCardProps) => {
     albumLink = `/albums/new/${props.spotify_id}`;
   } else if (props.release_year) {
     year = props.release_year;
-    albumLink = `/album/${props.spotify_id}`;
+    if (props.bookmarked) {
+      albumLink = `/albums/new/${props.spotify_id}`;
+    } else {
+      albumLink = `/album/${props.spotify_id}`;
+    }
   }
   const artistLink = `/artist/${props.artist?.spotify_id}`;
 
@@ -410,17 +384,19 @@ export const AlbumCard = (props: AlbumCardProps) => {
   }
 
   return (
-    <Link href={albumLink}>
-      <div
-        className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full"
-        ref={cardRef}
-      >
+    <div
+      className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full"
+      ref={cardRef}
+    >
+      <Link href={albumLink}>
         <ResponsiveImage
           src={props.image_url!}
           alt={`Photo of ${props.name}`}
           className="aspect-square max-h-[154px] transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
         />
-        <div className="mb-1 mt-2 flex w-full flex-col items-start ">
+      </Link>
+      <div className="mb-1 mt-2 flex w-full flex-col items-start ">
+        <Link href={albumLink}>
           <p
             className={
               "mb-1 text-sm font-medium text-white xl:text-base " +
@@ -430,25 +406,83 @@ export const AlbumCard = (props: AlbumCardProps) => {
           >
             {props.name}
           </p>
-          <div className="mt-1 flex items-center gap-1">
-            {props.artist?.name ? (
-              <>
-                <Link
-                  className="text-xs font-medium text-[#717171] transition hover:text-[#D2D2D3] hover:underline"
-                  href={artistLink}
-                >
-                  {props.artist.name}
-                </Link>
-                <p className="text-xs font-medium text-[#717171]">-</p>
-              </>
-            ) : null}
-            <p className="text-xs font-medium text-[#717171]">{year}</p>
-          </div>
-          {props.score ? (
-            <RatingChip ratingNumber={Math.round(props.score)} form="small" />
+        </Link>
+        <div className="mt-1 flex items-center gap-1">
+          {props.artist?.name ? (
+            <>
+              <Link
+                className="text-xs font-medium text-[#717171] transition hover:text-[#D2D2D3] hover:underline"
+                href={artistLink}
+              >
+                {trimString(props.artist.name, 20)}
+              </Link>
+              <p className="text-xs font-medium text-[#717171]">-</p>
+            </>
           ) : null}
+          <p className="text-xs font-medium text-[#717171]">{year}</p>
         </div>
+        {props.score ? (
+          <RatingChip ratingNumber={Math.round(props.score)} form="small" />
+        ) : (
+          <div className="absolute bottom-0 right-0">
+            <BookmarkButton
+              onClick={handleToggleBookmark}
+              spotify_id={props.spotify_id}
+              bookmarked={props.bookmarked!}
+            />
+          </div>
+        )}
       </div>
-    </Link>
+    </div>
+  );
+};
+
+const trimString = (str: string, length: number) => {
+  return str.length > length ? str.substring(0, length) + "..." : str;
+};
+
+interface BookmarkButtonProps {
+  bookmarked: boolean;
+  spotify_id: string;
+  onClick: (spotify_id: string) => void;
+}
+
+export const BookmarkButton = (props: BookmarkButtonProps) => {
+  const [bookmarked, setBookmarked] = useState(props.bookmarked);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleToggleBookmark = () => {
+    setBookmarked(!bookmarked);
+    props.onClick(props.spotify_id);
+  };
+
+  const fillColor =
+    isHovering && bookmarked
+      ? "#dc2626"
+      : bookmarked
+      ? "#22c55e"
+      : "transparent";
+  const strokeColor =
+    isHovering && bookmarked
+      ? "white"
+      : bookmarked
+      ? "#22c55e"
+      : isHovering
+      ? "#22c55e"
+      : "#717171";
+
+  return (
+    <button
+      className="rounded-md bg-gray-700 bg-opacity-10 bg-clip-padding p-1 backdrop-blur-sm transition-colors hover:bg-gray-700 hover:text-[#D2D2D3]"
+      onClick={handleToggleBookmark}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {isHovering && bookmarked ? (
+        <BookmarkX size={20} fill={fillColor} stroke={strokeColor} />
+      ) : (
+        <Bookmark size={20} fill={fillColor} stroke={strokeColor} />
+      )}
+    </button>
   );
 };

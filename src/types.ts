@@ -1,3 +1,4 @@
+// This is how the data comes from the Spotify API
 export interface SpotifyAlbum {
   album_type: string;
   artists: {
@@ -31,25 +32,18 @@ export interface SpotifyAlbum {
     items: SpotifyTrack[];
   };
 }
+// This is an album that has not been reviewed, but has been bookmarked for later
+export interface BookmarkedAlbum {
+  id: number;
+  spotify_id: string;
+  name: string;
+  artist: string;
+  image_urls: string;
+  release_year: string;
+  release_date: string;
+}
 
-// export interface AlbumReview {
-//   id: number;
-//   artist_db_id: string;
-//   spotify_id: string;
-//   artist: ReviewedArtist;
-//   best_song: string;
-//   worst_song: string;
-//   name: string;
-//   image_urls: string;
-//   createdAt: Date;
-//   review_score: number;
-//   review_content: string;
-//   review_date: string;
-//   runtime: string;
-//   formatted_runtime: string;
-//   formatted_release_date: string;
-// }
-
+// This is a reviewed album
 export interface AlbumReview {
   id: number;
   artist_db_id: number;
@@ -67,6 +61,18 @@ export interface AlbumReview {
   release_date: string;
   release_year: number;
   scored_tracks: string;
+}
+
+// This is the minimum data needed to display the above 3 types on an AlbumCard
+export interface DisplayAlbum {
+  spotify_id: string;
+  artist_spotify_id: string;
+  artist_name: string;
+  name: string;
+  release_year: number;
+  image_url: string;
+  review_score?: number;
+  bookmarked?: boolean;
 }
 
 export interface ReviewedArtist {
