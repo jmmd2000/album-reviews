@@ -136,7 +136,6 @@ export const AlbumGrid = (props: AlbumGridProps) => {
   const { controls, albums } = props;
   const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums);
   const [sortKey, setSortKey] = useState("all");
-  console.log(albums);
 
   const filterAlbums = (filterText: string) => {
     const filteredAlbums: DisplayAlbum[] = albumGroup.filter((album) => {
@@ -291,7 +290,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
                     spotify_id={album.spotify_id}
                     key={`${sortKey}-${album.spotify_id}`}
                     name={album.name}
-                    release_date={album.release_year.toString()}
+                    release_year={album.release_year}
                     image_url={album.image_url}
                     artist={{
                       name: album.artist_name,
@@ -314,7 +313,6 @@ export const AlbumGrid = (props: AlbumGridProps) => {
 interface AlbumCardProps {
   spotify_id: string;
   name: string;
-  release_date?: string;
   release_year?: number;
   image_url: string | undefined;
   artist?: {
@@ -347,21 +345,13 @@ export const AlbumCard = (props: AlbumCardProps) => {
     });
   };
 
-  //* Get just the year from the release date
-  let year = 0;
   let albumLink = "";
-  if (props.release_date) {
-    const date = new Date(props.release_date);
-    year = date.getFullYear();
+  if (props.bookmarked) {
     albumLink = `/albums/new/${props.spotify_id}`;
-  } else if (props.release_year) {
-    year = props.release_year;
-    if (props.bookmarked) {
-      albumLink = `/albums/new/${props.spotify_id}`;
-    } else {
-      albumLink = `/album/${props.spotify_id}`;
-    }
+  } else {
+    albumLink = `/album/${props.spotify_id}`;
   }
+
   const artistLink = `/artist/${props.artist?.spotify_id}`;
 
   //* Apply custom marquee scroll animation to albums with names longer than the card width
@@ -420,7 +410,9 @@ export const AlbumCard = (props: AlbumCardProps) => {
               <p className="text-xs font-medium text-[#717171]">-</p>
             </>
           ) : null}
-          <p className="text-xs font-medium text-[#717171]">{year}</p>
+          <p className="text-xs font-medium text-[#717171]">
+            {props.release_year}
+          </p>
         </div>
         {props.score ? (
           <RatingChip ratingNumber={Math.round(props.score)} form="small" />
