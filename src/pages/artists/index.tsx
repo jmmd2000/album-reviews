@@ -19,7 +19,7 @@ export default function ArtistsPage() {
   useEffect(() => {
     if (isSuccess) {
       // console.log(reviewedArtists, "reviewedArtists success");
-      setArtists(reviewedArtists as ReviewedArtist[]);
+      setArtists(reviewedArtists as unknown as ReviewedArtist[]);
     }
 
     if (isError) {

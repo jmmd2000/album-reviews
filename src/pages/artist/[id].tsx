@@ -3,7 +3,12 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { RatingChip, getRatingString } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
-import type { ReviewedTrack, AlbumReview, SpotifyImage } from "~/types";
+import type {
+  ReviewedTrack,
+  AlbumReview,
+  SpotifyImage,
+  DisplayAlbum,
+} from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
 import Head from "next/head";
@@ -20,7 +25,8 @@ import { TrackCard } from "../album/[id]";
 
 export default function ArtistDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
-  const [albums, setAlbums] = useState<AlbumReview[]>([]);
+  const [albums, setAlbums] = useState<DisplayAlbum[]>([]);
+  const [albumReviews, setAlbumReviews] = useState<AlbumReview[]>([]);
   const [images, setImages] = useState<SpotifyImage[]>([]);
 
   const router = useRouter();
@@ -31,6 +37,14 @@ export default function ArtistDetail() {
     // isLoading,
     isSuccess,
   } = api.artist.getArtistById.useQuery(artistID);
+
+  const { data: artistAlbums } = api.artist.getArtistAlbums.useQuery(artistID);
+
+  useEffect(() => {
+    if (artistAlbums) {
+      setAlbumReviews(artistAlbums);
+    }
+  }, [artistAlbums]);
 
   useEffect(() => {
     //console.log("artist", artist);
@@ -88,13 +102,13 @@ export default function ArtistDetail() {
       </div>
       <div className="mt-12 space-y-14">
         <div className="mx-auto w-full">
-          <SongRanking albums={albums} />
+          <SongRanking albums={albumReviews} />
         </div>
         <div className="mx-auto w-full">
-          <AlbumReviewChart reviews={albums} />
+          <AlbumReviewChart reviews={albumReviews} />
         </div>
         <div className="mx-auto w-full">
-          <AlbumGrid reviewedAlbums={albums} />
+          <AlbumGrid albums={albums} />
         </div>
       </div>
     </>

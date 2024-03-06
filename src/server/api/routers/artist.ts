@@ -3,6 +3,8 @@ import {
   type SpotifyImage,
   type ReviewedArtist,
   type ReviewedTrack,
+  type DisplayAlbum,
+  type AlbumReview,
 } from "~/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
@@ -18,17 +20,48 @@ export const artistRouter = createTRPCRouter({
   }),
 
   //* This returns a specific album review by its spotify id
-  getArtistById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    const artist = ctx.prisma.artist.findUnique({
-      where: {
-        spotify_id: input,
-      },
-      include: {
-        albums: true,
-      },
-    });
-    return artist as unknown as ReviewedArtist;
-  }),
+  getArtistById: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const artist = ctx.prisma.artist.findUnique({
+        where: {
+          spotify_id: input,
+        },
+        include: {
+          albums: true,
+        },
+      });
+
+      const tempArtist = (await artist) as unknown as ReviewedArtist;
+      const tempArtistAlbums = tempArtist.albums as unknown as AlbumReview[];
+
+      const displayAlbums: DisplayAlbum[] = tempArtistAlbums.map((album) => {
+        console.log("album", album);
+        const image_urls = JSON.parse(album.image_urls) as SpotifyImage[];
+        return {
+          spotify_id: album.spotify_id,
+          artist_spotify_id: input,
+          artist_name: tempArtist.name,
+          name: album.name,
+          release_year: album.release_year,
+          image_url: image_urls[1]!.url,
+          review_score: album.review_score,
+          scored_tracks: album.scored_tracks,
+        };
+      });
+
+      console.log("displayAlbums", displayAlbums);
+
+      return {
+        id: tempArtist?.id,
+        spotify_id: tempArtist?.spotify_id,
+        name: tempArtist?.name,
+        image_urls: tempArtist?.image_urls,
+        leaderboard_position: tempArtist?.leaderboard_position,
+        albums: displayAlbums,
+        average_score: tempArtist?.average_score,
+      };
+    }),
 
   //* This returns the image URLs for the top 4 artists on
   //* the leaderboard for display on the home page
@@ -76,5 +109,21 @@ export const artistRouter = createTRPCRouter({
       }
 
       return tracks;
+    }),
+  getArtistAlbums: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const albums = await ctx.prisma.reviewedAlbum.findMany({
+        where: {
+          artist: {
+            spotify_id: input,
+          },
+        },
+        include: {
+          artist: true,
+        },
+      });
+
+      return albums as AlbumReview[];
     }),
 });

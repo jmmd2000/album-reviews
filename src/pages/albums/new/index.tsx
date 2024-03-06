@@ -136,6 +136,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
   const { controls, albums } = props;
   const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums);
   const [sortKey, setSortKey] = useState("all");
+  console.log(albums);
 
   const filterAlbums = (filterText: string) => {
     const filteredAlbums: DisplayAlbum[] = albumGroup.filter((album) => {

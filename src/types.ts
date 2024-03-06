@@ -73,6 +73,7 @@ export interface DisplayAlbum {
   image_url: string;
   review_score?: number;
   bookmarked?: boolean;
+  scored_tracks?: string;
 }
 
 export interface ReviewedArtist {
@@ -81,7 +82,7 @@ export interface ReviewedArtist {
   name: string;
   image_urls: string;
   leaderboard_position: number;
-  albums: AlbumReview[];
+  albums: DisplayAlbum[];
   average_score: number;
 }
 
