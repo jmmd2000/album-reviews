@@ -598,14 +598,12 @@ export const albumRouter = createTRPCRouter({
 
     const chosenAlbum = albumsByArtist[0]!;
 
-    const image_urls = JSON.parse(
-      chosenAlbum.image_url as string,
-    ) as SpotifyImage[];
+    const image_urls = JSON.parse(chosenAlbum.image_url) as SpotifyImage[];
 
     return {
       spotify_id: chosenAlbum.spotify_id,
-      artist_spotify_id: chosenAlbum.artist_spotify_id as string,
-      artist_name: chosenAlbum.artist_name as string,
+      artist_spotify_id: chosenAlbum.artist_spotify_id,
+      artist_name: chosenAlbum.artist_name,
       name: chosenAlbum.name,
       release_year: chosenAlbum.release_year,
       image_url: image_urls[1]!.url,
