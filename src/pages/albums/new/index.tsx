@@ -346,10 +346,10 @@ export const AlbumCard = (props: AlbumCardProps) => {
   };
 
   let albumLink = "";
-  if (props.bookmarked) {
-    albumLink = `/albums/new/${props.spotify_id}`;
-  } else {
+  if (props.score) {
     albumLink = `/album/${props.spotify_id}`;
+  } else {
+    albumLink = `/albums/new/${props.spotify_id}`;
   }
 
   const artistLink = `/artist/${props.artist?.spotify_id}`;
