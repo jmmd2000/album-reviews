@@ -20,6 +20,7 @@
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
     "@vercel/analytics": "^1.1.1",
+    "@vercel/node": "^3.0.26",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.330.0",

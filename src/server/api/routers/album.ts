@@ -167,13 +167,17 @@ export const albumRouter = createTRPCRouter({
             average_score: roundedScore,
             leaderboard_position: 0,
           };
-        } catch (err) {}
+        } catch (err) {
+          //! Need to handle this error
+        }
         if (artistData !== null) {
           try {
             createdArtist = await ctx.prisma.artist.create({
               data: artistData,
             });
-          } catch (err) {}
+          } catch (err) {
+            //! Need to handle this error
+          }
         }
       } else {
         let newAverageScore = roundedScore;
