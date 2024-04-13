@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/src/cron/checkArtistImages",
-      "schedule": "* * * * *"
+      "schedule": "0 0 * * 6"
     }
   ]
 }
