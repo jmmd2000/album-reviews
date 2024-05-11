@@ -5,6 +5,7 @@ import {
   type ReviewedTrack,
   type DisplayAlbum,
   type AlbumReview,
+  type SpotifyArtist,
 } from "~/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
@@ -125,5 +126,66 @@ export const artistRouter = createTRPCRouter({
       });
 
       return albums as AlbumReview[];
+    }),
+  updateArtistImages: publicProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const token = input;
+
+      try {
+        const artists = await ctx.prisma.artist.findMany();
+
+        for (const artist of artists) {
+          try {
+            console.log(artist.name, artist);
+            const response = await fetch(
+              `https://api.spotify.com/v1/artists/${artist.spotify_id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              },
+            );
+
+            if (!response.ok) {
+              console.error(
+                `Failed to fetch Spotify data for artist ID ${artist.spotify_id}`,
+              );
+              continue; // Skip to the next artist if the current one fails
+            }
+
+            const spotifyArtist = (await response.json()) as SpotifyArtist;
+            const newImageURLsString = JSON.stringify(spotifyArtist.images);
+
+            // Compare and update image data if different
+            if (artist.image_urls !== newImageURLsString) {
+              try {
+                await ctx.prisma.artist.update({
+                  where: { id: artist.id },
+                  data: { image_urls: newImageURLsString },
+                });
+              } catch (dbError) {
+                console.error(
+                  `Database error while updating artist ID ${
+                    artist.id
+                  }: ${String(dbError)}`,
+                );
+              }
+            }
+          } catch (fetchError) {
+            console.error(
+              `Error fetching or parsing data for artist ID ${
+                artist.spotify_id
+              }: ${String(fetchError)}`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Unexpected error in updateArtistImages procedure: ${String(error)}`,
+        );
+        return false;
+      }
+
+      console.log(`Artist images updated successfully!!!!! ${Date.now()}`);
+      return true;
     }),
 });

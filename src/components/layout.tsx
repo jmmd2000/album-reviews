@@ -63,6 +63,9 @@ const Navbar = () => {
             <NavLink href="/saved" isActive={isActive("/saved")}>
               Saved
             </NavLink>
+            <NavLink href="/settings" isActive={isActive("/settings")}>
+              Settings
+            </NavLink>
           </>
         )}
       </div>
