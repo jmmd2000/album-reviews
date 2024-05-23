@@ -276,99 +276,143 @@ export const albumRouter = createTRPCRouter({
       z.object({
         album_spotify_id: z.string(),
         best_song: z.string(),
+        old_best_song: z.string().or(z.null()),
         worst_song: z.string(),
+        old_worst_song: z.string(),
         review_content: z.string(),
+        old_review_content: z.string(),
         scored_tracks: z.array(ScoredTrackSchema),
+        old_scored_tracks: z.array(ScoredTrackSchema),
         artist_id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      let albumScore = 0;
-      //* remove tracks that have a score of 0
-      const filteredTracks = input.scored_tracks.filter(
-        (track) => track.rating !== 0,
-      );
+      // if the ratings have changed, update the album review with the newly calculated score
+      if (
+        !input.scored_tracks.every(
+          (item, index) =>
+            item.rating === input.old_scored_tracks[index]!.rating,
+        )
+      ) {
+        let albumScore = 0;
+        //* remove tracks that have a score of 0
+        const filteredTracks = input.scored_tracks.filter(
+          (track) => track.rating !== 0,
+        );
 
-      //* add up all the scores
-      filteredTracks.forEach((track) => {
-        albumScore += track.rating;
-      });
+        //* add up all the scores
+        filteredTracks.forEach((track) => {
+          albumScore += track.rating;
+        });
 
-      const maxScore = filteredTracks.length * 10;
-      const percentageScore = (albumScore / maxScore) * 100;
-      //* round to 0 decimal places
-      const roundedScore = Math.round(percentageScore);
+        const maxScore = filteredTracks.length * 10;
+        const percentageScore = (albumScore / maxScore) * 100;
+        //* round to 0 decimal places
+        const roundedScore = Math.round(percentageScore);
 
-      //* Get artist from database, and calculate new average score
-      const foundArtist = await ctx.prisma.artist.findUnique({
-        where: {
-          spotify_id: input.artist_id,
-        },
-        include: {
-          albums: true,
-        },
-      });
-      let newAverageScore = 0;
-
-      if (foundArtist) {
-        for (const album of foundArtist?.albums) {
-          if (album.spotify_id === input.album_spotify_id) {
-            newAverageScore += roundedScore;
-          } else {
-            newAverageScore += album.review_score!;
-          }
-        }
-        newAverageScore = newAverageScore / foundArtist?.albums.length;
-      }
-
-      await ctx.prisma.artist.update({
-        where: {
-          spotify_id: input.artist_id,
-        },
-        data: {
-          average_score: newAverageScore,
-        },
-      });
-
-      const updatedAlbumReview = await ctx.prisma.reviewedAlbum.update({
-        where: {
-          spotify_id: input.album_spotify_id,
-        },
-        data: {
-          artist: {
-            connect: {
-              id: foundArtist?.id,
-            },
-          },
-          scored_tracks: JSON.stringify(input.scored_tracks),
-          best_song: input.best_song,
-          worst_song: input.worst_song,
-          review_content: input.review_content,
-          review_score: roundedScore,
-        },
-      });
-
-      //* Get all artists, sort them by average score and update their leaderboard position
-      const allArtists = await ctx.prisma.artist.findMany({
-        orderBy: {
-          average_score: "desc",
-        },
-      });
-
-      let leaderboardPosition = 1;
-      for (const artist of allArtists) {
-        await ctx.prisma.artist.update({
+        //* Get artist from database, and calculate new average score
+        const foundArtist = await ctx.prisma.artist.findUnique({
           where: {
-            id: artist.id,
+            spotify_id: input.artist_id,
           },
-          data: {
-            leaderboard_position: leaderboardPosition,
+          include: {
+            albums: true,
           },
         });
-        leaderboardPosition++;
+        let newAverageScore = 0;
+
+        if (foundArtist) {
+          for (const album of foundArtist?.albums) {
+            if (album.spotify_id === input.album_spotify_id) {
+              newAverageScore += roundedScore;
+            } else {
+              newAverageScore += album.review_score!;
+            }
+          }
+          newAverageScore = newAverageScore / foundArtist?.albums.length;
+        }
+
+        await ctx.prisma.artist.update({
+          where: {
+            spotify_id: input.artist_id,
+          },
+          data: {
+            average_score: newAverageScore,
+          },
+        });
+
+        const updatedAlbumReview = await ctx.prisma.reviewedAlbum.update({
+          where: {
+            spotify_id: input.album_spotify_id,
+          },
+          data: {
+            artist: {
+              connect: {
+                id: foundArtist?.id,
+              },
+            },
+            scored_tracks: JSON.stringify(input.scored_tracks),
+            review_score: roundedScore,
+          },
+        });
+
+        //* Get all artists, sort them by average score and update their leaderboard position
+        const allArtists = await ctx.prisma.artist.findMany({
+          orderBy: {
+            average_score: "desc",
+          },
+        });
+
+        let leaderboardPosition = 1;
+        for (const artist of allArtists) {
+          await ctx.prisma.artist.update({
+            where: {
+              id: artist.id,
+            },
+            data: {
+              leaderboard_position: leaderboardPosition,
+            },
+          });
+          leaderboardPosition++;
+        }
+
+        return updatedAlbumReview;
+      }
+      // if the best song has changed, update the album review with the new best song
+      if (input.best_song !== input.old_best_song) {
+        await ctx.prisma.reviewedAlbum.update({
+          where: {
+            spotify_id: input.album_spotify_id,
+          },
+          data: {
+            best_song: input.best_song,
+          },
+        });
       }
 
-      return updatedAlbumReview;
+      // if the worst song has changed, update the album review with the new worst song
+      if (input.worst_song !== input.old_worst_song) {
+        await ctx.prisma.reviewedAlbum.update({
+          where: {
+            spotify_id: input.album_spotify_id,
+          },
+          data: {
+            worst_song: input.worst_song,
+          },
+        });
+      }
+
+      // if the review content has changed, update the album review with the new review content
+      if (input.review_content !== input.old_review_content) {
+        await ctx.prisma.reviewedAlbum.update({
+          where: {
+            spotify_id: input.album_spotify_id,
+          },
+          data: {
+            review_content: input.review_content,
+          },
+        });
+      }
     }),
 
   //'--------------------

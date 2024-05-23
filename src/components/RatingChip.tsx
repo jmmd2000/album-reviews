@@ -73,7 +73,8 @@ export const RatingChip = (props: {
 
   const sizeClassMap: Record<string, string> = {
     label: "h-12 w-16",
-    small: "h-5 w-8 absolute bottom-0 right-0",
+    // small: "h-5 w-8 absolute bottom-0 right-0",
+    small: "h-5 w-8",
   };
 
   const textSizeClassMap: Record<string, string> = {
@@ -90,7 +91,7 @@ export const RatingChip = (props: {
 
   return (
     // <div className={"flex flex-col items-center " + labelPosition}>
-    <div className="flex flex-col items-center ">
+    <div className="flex flex-col items-center">
       <div
         className={
           "flex items-center justify-center rounded-md border-2 bg-opacity-40 " +

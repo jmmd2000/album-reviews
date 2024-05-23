@@ -1,6 +1,17 @@
-import { SyncLoader } from "react-spinners";
+import {
+  HashLoader,
+  PulseLoader,
+  RotateLoader,
+  ScaleLoader,
+  SyncLoader,
+} from "react-spinners";
 
-export const Loader = () => {
+interface LoaderProps {
+  size?: number;
+}
+
+export const Loader = (props: LoaderProps) => {
+  const size = props.size ?? 50;
   const possibleColors = [
     "#c026d3",
     "#7c3aed",
@@ -16,5 +27,5 @@ export const Loader = () => {
   ];
   const color =
     possibleColors[Math.floor(Math.random() * possibleColors.length)];
-  return <SyncLoader color={color} />;
+  return <HashLoader color={color} size={size} />;
 };

@@ -284,9 +284,13 @@ export default function NewAlbumForm() {
 
     updateCurrentReview({
       review_content: reviewContent,
+      old_review_content: review!.review_content!,
       best_song: bestSong,
+      old_best_song: review!.best_song,
       worst_song: worstSong,
+      old_worst_song: review!.worst_song,
       scored_tracks: trackArray,
+      old_scored_tracks: JSON.parse(review!.scored_tracks) as ReviewedTrack[],
       artist_id: review!.artist.spotify_id,
       album_spotify_id: review!.spotify_id,
     });
@@ -442,13 +446,18 @@ const ReviewContentInput = (props: {
 }) => {
   const { name, id, value } = props;
   return (
-    <textarea
-      name={name}
-      id={id}
-      className="mt-8 h-[120px] w-full rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg sm:w-[80%]"
-      placeholder="Write your review here..."
-      defaultValue={value}
-    ></textarea>
+    <div className="mt-8 flex w-full flex-col items-center gap-3">
+      <label htmlFor={id} className="text-slate-600">
+        *italic*, -bold-, _both_
+      </label>
+      <textarea
+        name={name}
+        id={id}
+        className="h-[200px] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg sm:w-[80%]"
+        placeholder="Write your review here..."
+        defaultValue={value}
+      ></textarea>
+    </div>
   );
 };
 

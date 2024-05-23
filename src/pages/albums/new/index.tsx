@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { api } from "~/utils/api";
 import { useEffect, useRef, useState } from "react";
-import { type DisplayAlbum } from "src/types";
+import { type SpotifyImage, type DisplayAlbum } from "src/types";
 import { useTokenContext } from "~/context/TokenContext";
 import { Loader } from "~/components/Loader";
 import { RatingChip } from "~/components/RatingChip";
@@ -11,6 +11,11 @@ import { toast } from "react-toastify";
 import Head from "next/head";
 import { VisibilityObserver } from "~/components/VisibilityObserver";
 import { Bookmark, BookmarkX } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "~/components/ui/hover-card";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<DisplayAlbum[]>([]);
@@ -150,6 +155,8 @@ export const AlbumGrid = (props: AlbumGridProps) => {
     return filteredAlbums;
   };
 
+  const { token } = useTokenContext();
+
   useEffect(() => {
     setAlbumGroup(albums);
   }, [albums]);
@@ -282,6 +289,12 @@ export const AlbumGrid = (props: AlbumGridProps) => {
         </div>
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
+        <ArtistHoverInfo
+          artistID="6qqNVTkY8uBg9cP3Jd7DAH"
+          artistName="Billie Eilish"
+          token={token}
+          reviewed
+        />
         {albumGroup.length !== 0
           ? albumGroup.map((album) => (
               <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
@@ -405,7 +418,19 @@ export const AlbumCard = (props: AlbumCardProps) => {
                 className="text-xs font-medium text-[#717171] transition hover:text-[#D2D2D3] hover:underline"
                 href={artistLink}
               >
-                {trimString(props.artist.name, 20)}
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <p>{trimString(props.artist.name, 20)}</p>
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <ArtistHoverInfo
+                      artistID={props.artist.spotify_id!}
+                      artistName={props.artist.name}
+                      token={token}
+                      reviewed
+                    />
+                  </HoverCardContent>
+                </HoverCard>
               </Link>
               <p className="text-xs font-medium text-[#717171]">-</p>
             </>
@@ -415,7 +440,9 @@ export const AlbumCard = (props: AlbumCardProps) => {
           </p>
         </div>
         {props.score ? (
-          <RatingChip ratingNumber={Math.round(props.score)} form="small" />
+          <div className="absolute bottom-0 right-0">
+            <RatingChip ratingNumber={Math.round(props.score)} form="small" />
+          </div>
         ) : (
           <div className="absolute bottom-0 right-0">
             <BookmarkButton
@@ -477,5 +504,91 @@ export const BookmarkButton = (props: BookmarkButtonProps) => {
         <Bookmark size={20} fill={fillColor} stroke={strokeColor} />
       )}
     </button>
+  );
+};
+
+interface ArtistHoverInfoProps {
+  artistID: string;
+  token: string;
+  artistName: string;
+  reviewed: boolean;
+}
+
+const ArtistHoverInfo = (props: ArtistHoverInfoProps) => {
+  const [artistImage, setArtistImage] = useState("");
+  // const { data: imageData } = api.spotify.getArtistImage.useQuery({
+  //   id: props.artistID,
+  //   accessToken: props.token,
+  // });
+
+  const { data, isSuccess } = api.artist.getArtistById.useQuery(
+    props.artistID,
+    {
+      staleTime: 1000 * 60 * 10,
+      // stale time increased to cache the data as this component is frequently unmounted and remounted
+    },
+  );
+
+  useEffect(() => {
+    if (isSuccess && data?.image_urls) {
+      const urls = JSON.parse(data.image_urls) as SpotifyImage[];
+      if (urls[2]) {
+        setArtistImage(urls[2].url);
+      }
+    }
+  }, [data, isSuccess]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        {data?.image_urls && (
+          <img
+            src={artistImage}
+            alt={props.artistName}
+            className="aspect-square w-[35px]"
+          />
+        )}
+        {/* {isLoading && <Loader size={30} />} */}
+        {data && (
+          <p className="font-base text-md text-gray-300">
+            {trimString(props.artistName, 20)}
+          </p>
+        )}
+
+        <div className="ml-auto">
+          {data?.average_score && props.reviewed && (
+            <RatingChip
+              ratingNumber={Math.round(data.average_score)}
+              form="small"
+            />
+          )}
+        </div>
+      </div>
+      {data?.albums && (
+        <>
+          <div className="flex items-end">
+            <p className="text-sm font-light text-gray-400">Top 3</p>
+            <p className="ml-auto text-xs font-light text-gray-400">
+              {data.albums.length === 1
+                ? "1 review"
+                : data.albums.length + " reviews"}
+            </p>
+          </div>
+          <div className="flex gap-1">
+            {data.albums
+              .sort((a, b) => b.review_score! - a.review_score!)
+              .slice(0, 3)
+              .map((album, index) => (
+                <img
+                  src={album.image_url}
+                  alt=""
+                  key={index}
+                  className="aspect-square w-[30px]"
+                />
+              ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 };

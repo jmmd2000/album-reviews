@@ -286,10 +286,12 @@ const ArtistCard = (props: {
             </p>
           </div>
           {props.average_score ? (
-            <RatingChip
-              ratingNumber={Math.round(props.average_score)}
-              form="small"
-            />
+            <div className="absolute bottom-0 right-0">
+              <RatingChip
+                ratingNumber={Math.round(props.average_score)}
+                form="small"
+              />
+            </div>
           ) : null}
         </div>
       </div>

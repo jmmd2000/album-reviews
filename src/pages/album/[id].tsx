@@ -5,14 +5,11 @@ import { RatingCard, RatingChip } from "~/components/RatingChip";
 import { Loader } from "~/components/Loader";
 import { removeFeaturedArtist } from "~/helpers/dateFormat";
 import { formatDuration } from "~/helpers/durationConversion";
+import { formatReviewContent } from "~/helpers/formatReviewContent";
 import {
-  // type AlbumWithExtras,
   type RatingChipValues,
-  // RatingValue,
-  // ReviewedArtist,
   type ReviewedTrack,
   type ReviewedTrackArtist,
-  // SpotifyAlbum,
   type SpotifyImage,
 } from "~/types";
 import { api } from "~/utils/api";
@@ -93,11 +90,17 @@ export default function AlbumDetail() {
           <Loader />
         )}
 
-        <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
-          <p className="mx-2 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg">
-            {album?.review_content}
-          </p>
-        </div>
+        {/* Review content */}
+        {album?.review_content && (
+          <div className="mt-4 w-full sm:mt-8 sm:w-[80%]">
+            <p
+              className="mx-2 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg"
+              dangerouslySetInnerHTML={{
+                __html: formatReviewContent(album?.review_content),
+              }}
+            ></p>
+          </div>
+        )}
 
         <BestWorst best={album?.best_song} worst={album?.worst_song} />
 
