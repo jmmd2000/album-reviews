@@ -289,12 +289,6 @@ export const AlbumGrid = (props: AlbumGridProps) => {
         </div>
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
-        <ArtistHoverInfo
-          artistID="6qqNVTkY8uBg9cP3Jd7DAH"
-          artistName="Billie Eilish"
-          token={token}
-          reviewed
-        />
         {albumGroup.length !== 0
           ? albumGroup.map((album) => (
               <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
@@ -420,7 +414,7 @@ export const AlbumCard = (props: AlbumCardProps) => {
               >
                 <HoverCard>
                   <HoverCardTrigger>
-                    <p>{trimString(props.artist.name, 20)}</p>
+                    <p>{trimString(props.artist.name, 16)}</p>
                   </HoverCardTrigger>
                   <HoverCardContent>
                     <ArtistHoverInfo
