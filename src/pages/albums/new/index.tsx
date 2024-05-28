@@ -155,7 +155,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
     return filteredAlbums;
   };
 
-  const { token } = useTokenContext();
+  // const { token } = useTokenContext();
 
   useEffect(() => {
     setAlbumGroup(albums);
@@ -288,7 +288,8 @@ export const AlbumGrid = (props: AlbumGridProps) => {
           </p>
         </div>
       )}
-      <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
+      {/* To solve the problem of the album grid being full width, we need a conditional class to set the width to 70% and the max cols to 5, use the cname package */}
+      <div className="mx-auto grid w-full grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {albumGroup.length !== 0
           ? albumGroup.map((album) => (
               <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
