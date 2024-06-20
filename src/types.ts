@@ -195,6 +195,12 @@ export type RatingValue =
   | "Terrible"
   | "Non-song";
 
+export interface ImageRowData {
+  id: number;
+  name: string;
+  imageUrl: string;
+}
+
 // export interface TokenObject {
 //   id: number;
 //   token: string;

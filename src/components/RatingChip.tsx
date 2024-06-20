@@ -88,7 +88,7 @@ export const RatingCard = (props: {
 
 export const RatingChip = (props: {
   ratingNumber: number;
-  form: "small" | "label";
+  form: "small" | "label" | "extraSmall";
 }) => {
   const { ratingNumber, form } = props;
 
@@ -146,6 +146,7 @@ export const RatingChip = (props: {
         size: {
           label: "h-12 w-16",
           small: "h-5 w-8",
+          extraSmall: "h-4 w-6",
         },
         color: {
           Perfect: "text-fuchsia-600 bg-fuchsia-600 border-fuchsia-600",
@@ -171,6 +172,7 @@ export const RatingChip = (props: {
       size: {
         label: "text-2xl",
         small: "text-xs",
+        extraSmall: "text-[10px]",
       },
       color: {
         Perfect: "text-fuchsia-600",

@@ -37,7 +37,6 @@ export const artistRouter = createTRPCRouter({
       const tempArtistAlbums = tempArtist.albums as unknown as AlbumReview[];
 
       const displayAlbums: DisplayAlbum[] = tempArtistAlbums.map((album) => {
-        console.log("album", album);
         const image_urls = JSON.parse(album.image_urls) as SpotifyImage[];
         return {
           spotify_id: album.spotify_id,
@@ -64,24 +63,33 @@ export const artistRouter = createTRPCRouter({
       };
     }),
 
-  //* This returns the image URLs for the top 4 artists on
+  //* This returns the image URLs for the top X artists on
   //* the leaderboard for display on the home page
-  getTopFourArtists: publicProcedure.query(async ({ ctx }) => {
-    const artists = await ctx.prisma.artist.findMany({
-      orderBy: {
-        average_score: "desc",
-      },
-      take: 4,
-    });
+  getTopArtists: publicProcedure
+    .input(z.number())
+    .query(async ({ ctx, input }) => {
+      const artists = await ctx.prisma.artist.findMany({
+        orderBy: {
+          average_score: "desc",
+        },
+        take: input,
+        include: {
+          albums: true,
+        },
+      });
 
-    const imageUrls = [];
-    for (const artist of artists) {
-      const images = JSON.parse(artist.image_urls) as SpotifyImage[];
-      imageUrls.push(images[0]!.url);
-    }
+      // const topArtists: ImageRowData[] = [];
+      // for (const artist of artists) {
+      //   const images = JSON.parse(artist.image_urls) as SpotifyImage[];
+      //   topArtists.push({
+      //     imageUrl: images[0]!.url,
+      //     id: artist.id,
+      //     name: artist.name,
+      //   });
+      // }
 
-    return imageUrls;
-  }),
+      return artists;
+    }),
 
   //* Get an artist, compile their album tracks into one array and return it
   //* Used for the track tier list on the artist page

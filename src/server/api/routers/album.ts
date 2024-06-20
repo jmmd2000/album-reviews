@@ -2,6 +2,7 @@ import { z } from "zod";
 import type {
   AlbumReview,
   DisplayAlbum,
+  ImageRowData,
   SpotifyAlbum,
   SpotifyArtist,
   SpotifyImage,
@@ -267,6 +268,50 @@ export const albumRouter = createTRPCRouter({
       }
 
       return test;
+    }),
+  //* This allows the user to get X number of albums based on a field
+  getAlbumsByField: publicProcedure
+    .input(z.object({ count: z.number(), field: z.string(), sort: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const albums = await ctx.prisma.reviewedAlbum.findMany({
+        orderBy: {
+          [input.field]: input.sort,
+        },
+        take: input.count,
+        include: {
+          artist: true,
+        },
+      });
+
+      const tempReviews = [...albums] as unknown as AlbumReview[];
+
+      const displayAlbums: DisplayAlbum[] = tempReviews.map((album) => {
+        const image_urls = JSON.parse(album.image_urls) as SpotifyImage[];
+
+        return {
+          spotify_id: album.spotify_id,
+          artist_spotify_id: album.artist.spotify_id,
+          artist_name: album.artist.name,
+          name: album.name,
+          release_year: album.release_year,
+          image_url: image_urls[1]!.url,
+          review_score: album.review_score,
+        };
+      });
+
+      // return displayAlbums;
+
+      // const mappedAlbums: ImageRowData[] = [];
+      // for (const album of albums) {
+      //   const images = JSON.parse(album.image_urls) as SpotifyImage[];
+      //   mappedAlbums.push({
+      //     imageUrl: images[0]!.url,
+      //     id: album.id,
+      //     name: album.name,
+      //   });
+      // }
+
+      return displayAlbums;
     }),
   //'--------------------
   //* UPDATE ALBUM REVIEW

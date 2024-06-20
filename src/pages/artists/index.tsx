@@ -7,6 +7,8 @@ import Link from "next/link";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
 import Head from "next/head";
+import { set } from "zod";
+import { VisibilityObserver } from "~/components/VisibilityObserver";
 
 export default function ArtistsPage() {
   const [artists, setArtists] = useState<ReviewedArtist[]>([]);
@@ -70,10 +72,17 @@ export default function ArtistsPage() {
 export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
   const { artists } = props;
   const [reviewedArtists, setReviewedArtists] = useState<ReviewedArtist[]>([]);
+  const [sortKey, setSortKey] = useState("all");
 
   useEffect(() => {
-    setReviewedArtists(artists);
-  }, [artists]);
+    // Apply the sorting whenever the component mounts or artists data changes
+    if (sortKey === "all") {
+      setReviewedArtists(artists);
+    } else {
+      sortArtists(sortKey);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artists, sortKey]);
 
   const filterArtists = (filterText: string) => {
     const filteredArtists: ReviewedArtist[] = reviewedArtists.filter(
@@ -92,37 +101,43 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
     switch (sort) {
       case "all":
         sortedArtists = reviewedArtists!;
+        setSortKey("all");
         break;
       case "artist-az":
         sortedArtists = sortedArtists.sort((a, b) =>
           a.name.localeCompare(b.name),
         );
+        setSortKey("artist-az");
         break;
       case "artist-za":
         sortedArtists = sortedArtists.sort((a, b) =>
           b.name.localeCompare(a.name),
         );
+        setSortKey("artist-za");
         break;
       case "score-asc":
         sortedArtists = sortedArtists.sort(
           (a, b) => a.average_score - b.average_score,
         );
+        setSortKey("score-asc");
         break;
       case "score-desc":
         sortedArtists = sortedArtists.sort(
           (a, b) => b.average_score - a.average_score,
         );
+        setSortKey("score-desc");
         break;
       case "num-reviews-asc":
         sortedArtists = sortedArtists.sort(
           (a, b) => a.albums.length - b.albums.length,
         );
-
+        setSortKey("num-reviews-asc");
         break;
       case "num-reviews-desc":
         sortedArtists = sortedArtists.sort(
           (a, b) => b.albums.length - a.albums.length,
         );
+        setSortKey("num-reviews-desc");
         break;
       default:
         sortedArtists = reviewedArtists!;
@@ -207,51 +222,43 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
       )}
       <div className="grid grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {reviewedArtists.map((artist) => (
-          <ArtistCard
-            spotify_id={artist.spotify_id}
-            name={artist.name}
-            image_urls={artist.image_urls}
-            leaderboard_position={artist.leaderboard_position}
-            average_score={artist.average_score}
-            key={artist.spotify_id}
-            num_albums={artist.albums.length}
-          />
+          <VisibilityObserver key={`${sortKey}-${artist.spotify_id}`}>
+            {(isVisible) => (
+              <ArtistCard
+                spotify_id={artist.spotify_id}
+                name={artist.name}
+                image_urls={artist.image_urls}
+                leaderboard_position={artist.leaderboard_position}
+                average_score={artist.average_score}
+                key={artist.spotify_id}
+                num_albums={artist.albums.length}
+                isVisible={isVisible}
+              />
+            )}
+          </VisibilityObserver>
         ))}
       </div>
     </>
   );
 };
 
-const ArtistCard = (props: {
+export const ArtistCard = (props: {
   spotify_id: string;
   name: string;
   image_urls: string;
   leaderboard_position: number;
   num_albums: number;
   average_score: number;
+  isVisible: boolean;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLParagraphElement>(null);
-  const [scrollAnimation, setScrollAnimation] = useState("");
 
   const urls = JSON.parse(props.image_urls) as SpotifyImage[];
   const image_url = urls[1]!.url;
 
-  //* Apply custom marquee scroll animation to artists with names longer than the card width
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (titleRef.current && cardRef.current) {
-        if (titleRef.current.offsetWidth > cardRef.current.offsetWidth) {
-          setScrollAnimation("animate-marquee");
-        }
-      }
-    };
-
-    checkOverflow();
-    // Check on window resize
-    window.addEventListener("resize", checkOverflow);
-    return () => window.removeEventListener("resize", checkOverflow);
-  }, []);
+  if (!props.isVisible) {
+    return null;
+  }
 
   return (
     <Link href={`/artist/${props.spotify_id}`}>
@@ -262,16 +269,10 @@ const ArtistCard = (props: {
         <ResponsiveImage
           src={image_url}
           alt={`Photo of ${props.name}`}
-          className="aspect-square max-h-[154px] transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
+          className="aspect-square max-h-[154px] rounded-full transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
         />
         <div className="mb-1 mt-2 flex w-full flex-col items-start sm:w-44 ">
-          <p
-            className={
-              "mb-1 text-sm font-medium text-white xl:text-base " +
-              scrollAnimation
-            }
-            ref={titleRef}
-          >
+          <p className="mb-1 text-sm font-medium text-white xl:text-base ">
             {props.name}
           </p>
           <div className="mt-1 flex items-center gap-1">

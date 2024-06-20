@@ -16,6 +16,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
+import { cva } from "class-variance-authority";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<DisplayAlbum[]>([]);
@@ -154,8 +155,6 @@ export const AlbumGrid = (props: AlbumGridProps) => {
 
     return filteredAlbums;
   };
-
-  // const { token } = useTokenContext();
 
   useEffect(() => {
     setAlbumGroup(albums);
@@ -307,6 +306,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
                     isVisible={isVisible}
                     bookmarked={album.bookmarked}
                     score={album.review_score}
+                    size="default"
                   />
                 )}
               </VisibilityObserver>
@@ -330,14 +330,51 @@ interface AlbumCardProps {
   score?: number;
   isVisible?: boolean;
   bookmarked?: boolean;
+  size?: "default" | "small";
 }
 
 export const AlbumCard = (props: AlbumCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLParagraphElement>(null);
-  const [scrollAnimation, setScrollAnimation] = useState("");
-
   const { token } = useTokenContext();
+
+  const cardContainer = cva(
+    [
+      "relative",
+      "flex",
+      "max-h-max",
+      "flex-col",
+      "items-start",
+      "overflow-hidden",
+      "whitespace-nowrap",
+      "text-start",
+      "xl:w-full",
+    ],
+    {
+      variants: {
+        size: {
+          default: "mt-5 max-w-[154px] sm:w-44 lg:max-w-[205px]",
+          small: "mt-3 max-w-[124px] sm:w-36 lg:max-w-[175px]",
+        },
+      },
+    },
+  );
+
+  const cardImage = cva(
+    [
+      "aspect-square",
+      "transition-all",
+      "hover:cursor-pointer",
+      "hover:drop-shadow-2xl",
+    ],
+    {
+      variants: {
+        size: {
+          default: "max-h-[154px] sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56",
+          small: "max-h-[124px] sm:h-36 sm:max-h-36 xl:h-44 xl:max-h-44",
+        },
+      },
+    },
+  );
 
   const {
     mutate: toggleBookmarked,
@@ -362,48 +399,23 @@ export const AlbumCard = (props: AlbumCardProps) => {
 
   const artistLink = `/artist/${props.artist?.spotify_id}`;
 
-  //* Apply custom marquee scroll animation to albums with names longer than the card width
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (titleRef.current && cardRef.current) {
-        if (titleRef.current.offsetWidth > cardRef.current.offsetWidth) {
-          setScrollAnimation("animate-marquee");
-        }
-      }
-    };
-
-    checkOverflow();
-    // Check on window resize
-    window.addEventListener("resize", checkOverflow);
-    return () => window.removeEventListener("resize", checkOverflow);
-  }, []);
-
   if (!props.isVisible) {
     return null;
   }
 
   return (
-    <div
-      className="relative mt-5 flex max-h-max max-w-[154px] flex-col items-start overflow-hidden whitespace-nowrap text-start sm:w-44 lg:max-w-[205px] xl:w-full"
-      ref={cardRef}
-    >
+    <div className={cardContainer({ size: props.size })} ref={cardRef}>
       <Link href={albumLink}>
         <ResponsiveImage
           src={props.image_url!}
           alt={`Photo of ${props.name}`}
-          className="aspect-square max-h-[154px] transition-all hover:cursor-pointer hover:drop-shadow-2xl sm:h-44 sm:max-h-44 xl:h-52 xl:max-h-56"
+          className={cardImage({ size: props.size })}
         />
       </Link>
       <div className="mb-1 mt-2 flex w-full flex-col items-start ">
         <Link href={albumLink}>
-          <p
-            className={
-              "mb-1 text-sm font-medium text-white xl:text-base " +
-              scrollAnimation
-            }
-            ref={titleRef}
-          >
-            {props.name}
+          <p className="mb-1 font-medium text-white xl:text-base ">
+            {trimString(props.name, 22)}
           </p>
         </Link>
         <div className="mt-1 flex items-center gap-1">
