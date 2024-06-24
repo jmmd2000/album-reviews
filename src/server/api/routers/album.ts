@@ -2,7 +2,6 @@ import { z } from "zod";
 import type {
   AlbumReview,
   DisplayAlbum,
-  ImageRowData,
   SpotifyAlbum,
   SpotifyArtist,
   SpotifyImage,

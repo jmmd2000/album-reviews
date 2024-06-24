@@ -55,6 +55,9 @@ const Navbar = () => {
         <NavLink href="/artists" isActive={isActive("/artists")}>
           Artists
         </NavLink>
+        {/* <NavLink href="/concerts" isActive={isActive("/concerts")}>
+          Concerts
+        </NavLink> */}
         {auth && (
           <>
             <NavLink href="/albums/new" isActive={isActive("/albums/new")}>

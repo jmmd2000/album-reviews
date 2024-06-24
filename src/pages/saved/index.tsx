@@ -63,6 +63,7 @@ export default function SavedPage() {
               }}
               bookmarked={chosenAlbum.bookmarked}
               isVisible
+              size="default"
             />
           </div>
         )}

@@ -7,7 +7,6 @@ import Link from "next/link";
 import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
 import Head from "next/head";
-import { set } from "zod";
 import { VisibilityObserver } from "~/components/VisibilityObserver";
 
 export default function ArtistsPage() {

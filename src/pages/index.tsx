@@ -1,13 +1,8 @@
 import Head from "next/head";
 import { Loader } from "~/components/Loader";
 import { RatingCard } from "~/components/RatingChip";
-import {
-  type RatingValue,
-  type SpotifyImage,
-  type DisplayAlbum,
-} from "~/types";
+import { type RatingValue, type SpotifyImage } from "~/types";
 import { api } from "~/utils/api";
-import { AlbumCard } from "./albums/new";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
@@ -140,152 +135,152 @@ const TopFourGrid = () => {
   );
 };
 
-const StatsIntro = () => {
-  const {
-    data: topArtists,
-    isLoading: isLoadingTopArtists,
-    isSuccess: isSuccessTopArtists,
-  } = api.artist.getTopArtists.useQuery(3);
+// const StatsIntro = () => {
+//   // const {
+//   //   data: topArtists,
+//   //   isLoading: isLoadingTopArtists,
+//   //   isSuccess: isSuccessTopArtists,
+//   // } = api.artist.getTopArtists.useQuery(3);
 
-  const {
-    data: topAlbums,
-    isLoading: isLoadingTopAlbums,
-    isSuccess: isSuccessTopAlbums,
-  } = api.album.getAlbumsByField.useQuery({
-    count: 3,
-    field: "review_score",
-    sort: "desc",
-  });
+//   const {
+//     data: topAlbums,
+//     isLoading: isLoadingTopAlbums,
+//     isSuccess: isSuccessTopAlbums,
+//   } = api.album.getAlbumsByField.useQuery({
+//     count: 3,
+//     field: "review_score",
+//     sort: "desc",
+//   });
 
-  const {
-    data: recentAlbums,
-    isLoading: isLoadingRecentAlbums,
-    isSuccess: isSuccessRecentAlbums,
-  } = api.album.getAlbumsByField.useQuery({
-    count: 3,
-    field: "createdAt",
-    sort: "desc",
-  });
+//   const {
+//     data: recentAlbums,
+//     isLoading: isLoadingRecentAlbums,
+//     isSuccess: isSuccessRecentAlbums,
+//   } = api.album.getAlbumsByField.useQuery({
+//     count: 3,
+//     field: "createdAt",
+//     sort: "desc",
+//   });
 
-  return (
-    <div className="flex flex-col gap-5">
-      {/* <ImageRow
-        data={topArtists as unknown as ReviewedArtist[]}
-        title="Top Artists"
-        isLoading={isLoadingTopArtists}
-        isSuccess={isSuccessTopArtists}
-      /> */}
-      {topAlbums && (
-        <ImageRow
-          data={topAlbums}
-          title="Top Albums"
-          isLoading={isLoadingTopAlbums}
-          isSuccess={isSuccessTopAlbums}
-        />
-      )}
-      {recentAlbums && (
-        <ImageRow
-          data={recentAlbums}
-          title="Recent Reviews"
-          isLoading={isLoadingRecentAlbums}
-          isSuccess={isSuccessRecentAlbums}
-        />
-      )}
-    </div>
-  );
-};
+//   return (
+//     <div className="flex flex-col gap-5">
+//       {/* <ImageRow
+//         data={topArtists as unknown as ReviewedArtist[]}
+//         title="Top Artists"
+//         isLoading={isLoadingTopArtists}
+//         isSuccess={isSuccessTopArtists}
+//       /> */}
+//       {topAlbums && (
+//         <ImageRow
+//           data={topAlbums}
+//           title="Top Albums"
+//           isLoading={isLoadingTopAlbums}
+//           isSuccess={isSuccessTopAlbums}
+//         />
+//       )}
+//       {recentAlbums && (
+//         <ImageRow
+//           data={recentAlbums}
+//           title="Recent Reviews"
+//           isLoading={isLoadingRecentAlbums}
+//           isSuccess={isSuccessRecentAlbums}
+//         />
+//       )}
+//     </div>
+//   );
+// };
 
-interface ImageRowProps {
-  // data?: ReviewedArtist[] | AlbumReview[];
-  data?: DisplayAlbum[];
-  title: string;
-  isLoading?: boolean;
-  isSuccess?: boolean;
-}
+// interface ImageRowProps {
+//   // data?: ReviewedArtist[] | AlbumReview[];
+//   data?: DisplayAlbum[];
+//   title: string;
+//   isLoading?: boolean;
+//   isSuccess?: boolean;
+// }
 
-const ImageRow = (props: ImageRowProps) => {
-  const { data, title, isLoading, isSuccess } = props;
-  console.log(data, isLoading, isSuccess);
-  return (
-    <div className="flex flex-col">
-      <h1 className="mb-2 text-xl font-semibold text-white sm:text-2xl">
-        {title}
-      </h1>
-      <div className="flex gap-2">
-        {isLoading ? (
-          <div className="mx-auto mt-20 flex h-10 w-20 items-center justify-center">
-            <Loader />
-          </div>
-        ) : isSuccess && data ? (
-          data.map(
-            (item, index) => (
-              <AlbumCard
-                spotify_id={item.spotify_id}
-                name={item.name}
-                release_year={item.release_year}
-                image_url={item.image_url}
-                artist={{
-                  name: item.artist_name,
-                  spotify_id: item.artist_spotify_id,
-                }}
-                isVisible={true}
-                bookmarked={false}
-                score={item.review_score}
-                key={index}
-                size="small"
-              />
-              // <img
-              //   src={item.imageUrl}
-              //   alt={"Image of " + item.name}
-              //   title={item.name}
-              //   className="aspect-square max-h-28 xl:aspect-square xl:max-h-36"
-              //   key={index}
-              // />
-              // if the data is an album, display the album card, otherwise display the artist card
+// const ImageRow = (props: ImageRowProps) => {
+//   const { data, title, isLoading, isSuccess } = props;
+//   console.log(data, isLoading, isSuccess);
+//   return (
+//     <div className="flex flex-col">
+//       <h1 className="mb-2 text-xl font-semibold text-white sm:text-2xl">
+//         {title}
+//       </h1>
+//       <div className="flex gap-2">
+//         {isLoading ? (
+//           <div className="mx-auto mt-20 flex h-10 w-20 items-center justify-center">
+//             <Loader />
+//           </div>
+//         ) : isSuccess && data ? (
+//           data.map(
+//             (item, index) => (
+//               <AlbumCard
+//                 spotify_id={item.spotify_id}
+//                 name={item.name}
+//                 release_year={item.release_year}
+//                 image_url={item.image_url}
+//                 artist={{
+//                   name: item.artist_name,
+//                   spotify_id: item.artist_spotify_id,
+//                 }}
+//                 isVisible={true}
+//                 bookmarked={false}
+//                 score={item.review_score}
+//                 key={index}
+//                 size="small"
+//               />
+//               // <img
+//               //   src={item.imageUrl}
+//               //   alt={"Image of " + item.name}
+//               //   title={item.name}
+//               //   className="aspect-square max-h-28 xl:aspect-square xl:max-h-36"
+//               //   key={index}
+//               // />
+//               // if the data is an album, display the album card, otherwise display the artist card
 
-              // if (typeof item === "string") {
-              //   <AlbumCard
-              //     spotify_id={item.spotify_id}
-              //     name={item.name}
-              //     release_year={item.release_year}
-              //     image_url={item.image_url}
-              //     artist={{
-              //       name: item.artist_name,
-              //       spotify_id: item.artist_spotify_id,
-              //     }}
-              //     isVisible={false}
-              //     bookmarked={false}
-              //     score={item.review_score}
-              //     key={index}
-              //   />
-              // } else {
-              //   <ArtistCard
-              //     spotify_id={item.spotify_id}
-              //     name={item.name}
-              //     image_urls={item.image_urls}
-              //     leaderboard_position={item.leaderboard_position}
-              //     average_score={item.average_score}
-              //     key={index}
-              //     num_albums={item.albums.length}
-              //   />
-              // }
+//               // if (typeof item === "string") {
+//               //   <AlbumCard
+//               //     spotify_id={item.spotify_id}
+//               //     name={item.name}
+//               //     release_year={item.release_year}
+//               //     image_url={item.image_url}
+//               //     artist={{
+//               //       name: item.artist_name,
+//               //       spotify_id: item.artist_spotify_id,
+//               //     }}
+//               //     isVisible={false}
+//               //     bookmarked={false}
+//               //     score={item.review_score}
+//               //     key={index}
+//               //   />
+//               // } else {
+//               //   <ArtistCard
+//               //     spotify_id={item.spotify_id}
+//               //     name={item.name}
+//               //     image_urls={item.image_urls}
+//               //     leaderboard_position={item.leaderboard_position}
+//               //     average_score={item.average_score}
+//               //     key={index}
+//               //     num_albums={item.albums.length}
+//               //   />
+//               // }
 
-              // "review_score" in item ? (
-            ),
-            // ) : (
-            // <ArtistCard
-            //   spotify_id={item.spotify_id}
-            //   name={item.name}
-            //   image_urls={item.image_urls}
-            //   leaderboard_position={item.leaderboard_position}
-            //   average_score={item.average_score}
-            //   key={index}
-            //   num_albums={item.albums.length}
-            // />
-            // ),
-          )
-        ) : null}
-      </div>
-    </div>
-  );
-};
+//               // "review_score" in item ? (
+//             ),
+//             // ) : (
+//             // <ArtistCard
+//             //   spotify_id={item.spotify_id}
+//             //   name={item.name}
+//             //   image_urls={item.image_urls}
+//             //   leaderboard_position={item.leaderboard_position}
+//             //   average_score={item.average_score}
+//             //   key={index}
+//             //   num_albums={item.albums.length}
+//             // />
+//             // ),
+//           )
+//         ) : null}
+//       </div>
+//     </div>
+//   );
+// };

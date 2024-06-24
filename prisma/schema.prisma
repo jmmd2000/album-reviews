@@ -42,6 +42,7 @@ model Artist{
     albums                 ReviewedAlbum[]
     average_score          Float
     leaderboard_position   Int?
+    concerts               Concert[]       @relation("ConcertsByArtist")
 }
 
 model BookmarkedAlbum {
@@ -55,3 +56,18 @@ model BookmarkedAlbum {
     release_date           String
 }
 
+model Concert{
+    id                     Int             @id @default(autoincrement())
+    artist                 Artist          @relation("ConcertsByArtist", fields: [artist_db_id], references: [id])
+    artist_db_id           Int
+    show_name              String
+    date                   DateTime
+    venue                  String
+    city                   String
+    image_url              String
+    // setlist                String          @db.Text //JSON object of array of songs
+    setlist_link           String
+    support_artists        String          @db.Text //JSON object of array of artists
+
+    @@index([artist_db_id])
+}

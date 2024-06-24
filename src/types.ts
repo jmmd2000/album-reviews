@@ -201,6 +201,31 @@ export interface ImageRowData {
   imageUrl: string;
 }
 
+export interface Concert {
+  id: number;
+  artist: ReviewedArtist;
+  artist_db_id: number;
+  show_name: string;
+  date: Date;
+  city: string;
+  venue: string;
+  image_url: string;
+  setlist: SetlistTrack[];
+  support_artists: Array<ReviewedArtist | NonReviewedArtist>;
+}
+
+export interface NonReviewedArtist {
+  spotify_id: string;
+  name: string;
+  image_urls: string;
+}
+
+export interface SetlistTrack {
+  track_name: string;
+  encore: boolean;
+  track_info: string;
+}
+
 // export interface TokenObject {
 //   id: number;
 //   token: string;
