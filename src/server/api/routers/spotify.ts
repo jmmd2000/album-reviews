@@ -93,7 +93,7 @@ export const spotifyRouter = createTRPCRouter({
           artist_name: album.artists[0]!.name,
           name: album.name,
           release_year: parseInt(album.release_date.slice(0, 4)),
-          image_url: album.images[1]!.url,
+          image_urls: album.images,
           review_score: reviewedAlbum?.review_score ?? undefined,
           bookmarked: !!bookmarkedAlbum,
         };

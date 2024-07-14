@@ -56,7 +56,7 @@ export default function SavedPage() {
               spotify_id={chosenAlbum.spotify_id}
               name={chosenAlbum.name}
               release_year={chosenAlbum.release_year}
-              image_url={chosenAlbum.image_url}
+              image_url={chosenAlbum.image_urls?.[0]?.url}
               artist={{
                 name: chosenAlbum.artist_name,
                 spotify_id: chosenAlbum.artist_spotify_id,

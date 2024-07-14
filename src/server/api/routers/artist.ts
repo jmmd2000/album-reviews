@@ -44,7 +44,7 @@ export const artistRouter = createTRPCRouter({
           artist_name: tempArtist.name,
           name: album.name,
           release_year: album.release_year,
-          image_url: image_urls[1]!.url,
+          image_urls: image_urls,
           review_score: album.review_score,
           scored_tracks: album.scored_tracks,
         };

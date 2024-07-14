@@ -298,7 +298,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
                     key={`${sortKey}-${album.spotify_id}`}
                     name={album.name}
                     release_year={album.release_year}
-                    image_url={album.image_url}
+                    image_url={album.image_urls[1]?.url}
                     artist={{
                       name: album.artist_name,
                       spotify_id: album.artist_spotify_id,
@@ -426,6 +426,7 @@ export const AlbumCard = (props: AlbumCardProps) => {
                 href={artistLink}
               >
                 <HoverCard>
+                  {/* This trigger is basically an <a> so it causes a minor error because you can't have a link within a link */}
                   <HoverCardTrigger>
                     <p>{trimString(props.artist.name, 16)}</p>
                   </HoverCardTrigger>
@@ -587,7 +588,7 @@ const ArtistHoverInfo = (props: ArtistHoverInfoProps) => {
               .slice(0, 3)
               .map((album, index) => (
                 <img
-                  src={album.image_url}
+                  src={album.image_urls[1]?.url}
                   alt=""
                   key={index}
                   className="aspect-square w-[30px]"
