@@ -70,7 +70,7 @@ export interface DisplayAlbum {
   artist_name: string;
   name: string;
   release_year: number;
-  image_url: string;
+  image_urls: SpotifyImage[];
   review_score?: number;
   bookmarked?: boolean;
   scored_tracks?: string;

@@ -293,7 +293,7 @@ export const albumRouter = createTRPCRouter({
           artist_name: album.artist.name,
           name: album.name,
           release_year: album.release_year,
-          image_url: image_urls[1]!.url,
+          image_urls: image_urls,
           review_score: album.review_score,
         };
       });
@@ -558,7 +558,7 @@ export const albumRouter = createTRPCRouter({
         artist_name: album.artist.name,
         name: album.name,
         release_year: album.release_year,
-        image_url: image_urls[1]!.url,
+        image_urls: image_urls,
         review_score: album.review_score,
       };
     });
@@ -646,7 +646,8 @@ export const albumRouter = createTRPCRouter({
     console.log(tempBookmarks);
 
     const displayAlbums: DisplayAlbum[] = tempBookmarks.map(
-      (album: DisplayAlbum) => {
+      // (album: DisplayAlbum) => {
+      (album: BookmarkedAlbum) => {
         const image_urls = JSON.parse(album.image_url) as SpotifyImage[];
         // console.log(image_urls);
 
@@ -656,7 +657,7 @@ export const albumRouter = createTRPCRouter({
           artist_name: album.artist_name,
           name: album.name,
           release_year: album.release_year,
-          image_url: image_urls[1]!.url,
+          image_urls: image_urls,
           bookmarked: true,
         };
       },
