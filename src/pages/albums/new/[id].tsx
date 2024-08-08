@@ -12,11 +12,16 @@ import { api } from "~/utils/api";
 import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
 import Head from "next/head";
 import { BookmarkButton } from ".";
+import { calculateAlbumScore } from "~/helpers/calculateAlbumScore";
 
 export default function NewAlbumForm() {
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [tracks, setTracks] = useState<ReviewedTrack[]>([]);
+  const [preliminaryTracks, setPreliminaryTracks] = useState<
+    { trackID: string; rating: number }[]
+  >([]);
+  const [preliminaryRating, setPreliminaryRating] = useState<number>(0);
   const { token } = useTokenContext();
   const router = useRouter();
   const albumID = router.query.id as string;
@@ -26,7 +31,10 @@ export default function NewAlbumForm() {
   let deletingToast: Id | null = null;
 
   const { data: review, isLoading: checkingIfExists } =
-    api.album.getReviewById.useQuery(albumID);
+    api.album.getReviewById.useQuery(albumID, {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    });
 
   const {
     mutate: toggleBookmarked,
@@ -42,9 +50,35 @@ export default function NewAlbumForm() {
     });
   };
 
+  const handlePreliminaryRatingChange = (rating: number, trackID: string) => {
+    console.log("rating", rating, "trackID", trackID);
+    const updatedTracks = preliminaryTracks.map((track) => {
+      if (track.trackID === trackID) {
+        track.rating = rating;
+      } else {
+        console.log("rating", rating, "trackID", trackID);
+      }
+      return track;
+    });
+    setPreliminaryTracks(updatedTracks);
+  };
+
+  useEffect(() => {
+    if (preliminaryTracks) {
+      console.log("preliminaryTracks", preliminaryTracks);
+      const score = calculateAlbumScore(preliminaryTracks);
+      setPreliminaryRating(score);
+    }
+  }, [preliminaryTracks]);
+
   useEffect(() => {
     if (review) {
       setTracks(JSON.parse(review.scored_tracks) as ReviewedTrack[]);
+      const parsedTracks = JSON.parse(review.scored_tracks) as ReviewedTrack[];
+      const mappedTracks = parsedTracks.map((track) => {
+        return { trackID: track.track_id, rating: track.rating };
+      });
+      setPreliminaryTracks(mappedTracks);
     }
   }, [review]);
 
@@ -52,15 +86,30 @@ export default function NewAlbumForm() {
     data: albumInfo,
     isError,
     isSuccess,
-  } = api.spotify.getAlbumDetails.useQuery({
-    id: albumID,
-    accessToken: token,
-  });
+  } = api.spotify.getAlbumDetails.useQuery(
+    {
+      id: albumID,
+      accessToken: token,
+    },
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  );
 
   useEffect(() => {
     //* If the query is successful and the albumInfo is not undefined, set the albumDetails state.
     if (isSuccess && albumInfo !== undefined) {
       setAlbumDetails(albumInfo);
+
+      console.log("album setting tracks", albumInfo?.album?.tracks.items);
+      albumInfo?.album?.tracks.items.forEach((track) => {
+        const trackRating = {
+          trackID: track.id,
+          rating: 0,
+        };
+        setPreliminaryTracks((prev) => [...prev, trackRating]);
+      });
     }
 
     //* If there is an error, throw it.
@@ -76,8 +125,13 @@ export default function NewAlbumForm() {
 
   const album = albumDetails?.album;
 
-  const { data: bookmarked } =
-    api.album.checkIfAlbumIsBookmarked.useQuery(albumID);
+  const { data: bookmarked } = api.album.checkIfAlbumIsBookmarked.useQuery(
+    albumID,
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  );
 
   useEffect(() => {
     if (bookmarked !== undefined) {
@@ -339,17 +393,23 @@ export default function NewAlbumForm() {
                 </p>
               </div>
             </div>
-            {review !== null && review !== undefined ? (
+            {review !== null && review !== undefined && (
               <div className="mt-4 sm:mt-0">
                 <RatingChip ratingNumber={review.review_score!} form="label" />
               </div>
-            ) : (
+            )}
+            {(review == null || review == undefined) && (
               <div>
                 <BookmarkButton
                   onClick={handleToggleBookmark}
                   spotify_id={album.id}
                   bookmarked={isBookmarked}
                 />
+              </div>
+            )}
+            {preliminaryTracks && (
+              <div className="mt-4 sm:mt-0">
+                <RatingChip ratingNumber={preliminaryRating} form="label" />
               </div>
             )}
           </div>
@@ -383,6 +443,7 @@ export default function NewAlbumForm() {
                   duration={track.duration_ms}
                   trackID={track.id}
                   select
+                  setPreliminaryRating={handlePreliminaryRatingChange}
                 />
               ))
             : tracks.map((track, index) => (
@@ -395,6 +456,7 @@ export default function NewAlbumForm() {
                   trackID={track.track_id}
                   rating={track.rating}
                   select
+                  setPreliminaryRating={handlePreliminaryRatingChange}
                 />
               ))}
         </div>

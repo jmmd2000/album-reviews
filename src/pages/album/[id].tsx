@@ -140,10 +140,16 @@ interface ArtistProfileProps {
 }
 
 export const ArtistProfile = (props: ArtistProfileProps) => {
-  const { data: imageData } = api.spotify.getArtistImage.useQuery({
-    id: props.artistID,
-    accessToken: props.token,
-  });
+  const { data: imageData } = api.spotify.getArtistImage.useQuery(
+    {
+      id: props.artistID,
+      accessToken: props.token,
+    },
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  );
 
   return (
     <div className="flex items-center gap-2">
@@ -209,6 +215,7 @@ export const TrackCard = (props: {
   duration: number;
   rating?: RatingChipValues;
   select?: boolean;
+  setPreliminaryRating?: (rating: number, trackID: string) => void;
 }) => {
   const ratingValues = [
     "Non-song",
@@ -223,8 +230,16 @@ export const TrackCard = (props: {
     "Amazing",
     "Perfect",
   ];
-  const { trackNumber, name, artists, duration, rating, select, trackID } =
-    props;
+  const {
+    trackNumber,
+    name,
+    artists,
+    duration,
+    rating,
+    select,
+    trackID,
+    setPreliminaryRating,
+  } = props;
 
   // console.log(trackNumber, name);
 
@@ -277,6 +292,7 @@ export const TrackCard = (props: {
             className="rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg"
             id={trackID}
             defaultValue={rating}
+            onChange={(e) => setPreliminaryRating!(+e.target.value, trackID)}
           >
             {ratingValues.map((rating, index) => (
               <option key={rating} value={index} className="text-gray-900">
