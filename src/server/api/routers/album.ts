@@ -97,6 +97,18 @@ const SpotifyAlbumSchema = z.object({
   }),
 });
 
+const SortValuesSchema = z
+  .union([
+    z.literal("all"),
+    z.literal("album-az"),
+    z.literal("album-za"),
+    z.literal("score-asc"),
+    z.literal("score-desc"),
+    z.literal("year-asc"),
+    z.literal("year-desc"),
+  ])
+  .or(z.null());
+
 export const albumRouter = createTRPCRouter({
   createAlbumReview: publicProcedure
     .input(
@@ -565,7 +577,146 @@ export const albumRouter = createTRPCRouter({
 
     return displayAlbums;
   }),
+  getPaginatedReviews: publicProcedure
+    .input(
+      z.object({
+        page: z.number(),
+        limit: z.number(),
+        sortValue: SortValuesSchema,
+        searchTerm: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      let options = {};
 
+      const sortValue = input.sortValue;
+      let orderBy = {};
+      switch (sortValue) {
+        case "all":
+          orderBy = {
+            review_date: "desc",
+          };
+          break;
+        case "album-az":
+          orderBy = {
+            name: "asc",
+          };
+          break;
+        case "album-za":
+          orderBy = {
+            name: "desc",
+          };
+          break;
+        case "score-asc":
+          orderBy = {
+            review_score: "asc",
+          };
+          break;
+        case "score-desc":
+          orderBy = {
+            review_score: "desc",
+          };
+          break;
+        case "year-asc":
+          orderBy = {
+            release_year: "asc",
+          };
+          break;
+        case "year-desc":
+          orderBy = {
+            release_year: "desc",
+          };
+          break;
+        default:
+          orderBy = {
+            review_date: "desc",
+          };
+          break;
+      }
+
+      let where: {
+        OR: Array<{
+          name?: { contains: string };
+          artist?: {
+            name: { contains: string };
+          };
+          release_year?: number;
+        }>;
+      } = { OR: [] };
+
+      if (
+        input.searchTerm &&
+        input.searchTerm !== undefined &&
+        input.searchTerm.length > 0
+      ) {
+        const searchTermNumeric = parseInt(input.searchTerm);
+        const isNumericSearch = !isNaN(searchTermNumeric);
+
+        where = {
+          OR: [
+            { name: { contains: input.searchTerm } },
+            {
+              artist: {
+                name: { contains: input.searchTerm },
+              },
+            },
+          ],
+        };
+
+        if (isNumericSearch) {
+          where.OR.push({
+            release_year: searchTermNumeric,
+          });
+        }
+
+        options = {
+          include: {
+            artist: true,
+          },
+          where,
+          orderBy,
+          skip: input.page * input.limit,
+          take: input.limit,
+        };
+      } else {
+        options = {
+          include: {
+            artist: true,
+          },
+          orderBy,
+          skip: input.page * input.limit,
+          take: input.limit,
+        };
+      }
+
+      const reviews = ctx.prisma.reviewedAlbum.findMany({
+        ...options,
+      });
+
+      const tempReviews = [...(await reviews)] as unknown as AlbumReview[];
+
+      const displayAlbums: DisplayAlbum[] = tempReviews.map((album) => {
+        const image_urls = JSON.parse(album.image_urls) as SpotifyImage[];
+
+        return {
+          spotify_id: album.spotify_id,
+          artist_spotify_id: album.artist.spotify_id,
+          artist_name: album.artist.name,
+          name: album.name,
+          release_year: album.release_year,
+          image_urls: image_urls,
+          review_score: album.review_score,
+        };
+      });
+
+      const reviewCount = await ctx.prisma.reviewedAlbum.count({ where });
+
+      return {
+        displayAlbums,
+        totalReviews: reviewCount,
+        totalPages: Math.ceil(reviewCount / input.limit),
+      };
+    }),
   //* This returns a specific album review by its spotify id
   getReviewById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
     const review = ctx.prisma.reviewedAlbum.findUnique({

@@ -39,7 +39,7 @@ export default function ArtistsPage() {
   // } = api.spotify.getAllArtists.useQuery();
 
   if (isSuccess) {
-    // console.log(reviewedArtists);
+    console.log(reviewedArtists);
     // console.log(reviewedArtists[0]?.albums);
   }
 
@@ -167,7 +167,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
               }}
             />
             <select
-              className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3  text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 "
+              className="h-[50px] w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 "
               onChange={(e) => sortArtists(e.target.value)}
             >
               <option

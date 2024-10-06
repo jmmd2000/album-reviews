@@ -199,14 +199,14 @@ const SongRanking = ({ albums }: SongRankingProps) => {
       (acc, song) => {
         const { rating, album_id } = song;
         if (!acc[rating]) acc[rating] = {};
-        if (!acc[rating]![album_id]) {
-          acc[rating]![album_id] = {
+        if (!acc[rating][album_id]) {
+          acc[rating][album_id] = {
             albumName: song.albumName,
             albumArt: song.albumArt,
             songs: [],
           };
         }
-        acc[rating]![album_id]!.songs.push(song);
+        acc[rating][album_id].songs.push(song);
         return acc;
       },
       {} as Record<

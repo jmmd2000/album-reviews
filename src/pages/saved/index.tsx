@@ -62,7 +62,7 @@ export default function SavedPage() {
                 spotify_id: chosenAlbum.artist_spotify_id,
               }}
               bookmarked={chosenAlbum.bookmarked}
-              isVisible
+              // isVisible
               size="default"
             />
           </div>

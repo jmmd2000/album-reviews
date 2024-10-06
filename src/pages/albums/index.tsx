@@ -1,55 +1,56 @@
 /* eslint-disable @next/next/no-img-element */
-import { api } from "~/utils/api";
-import { Loader } from "~/components/Loader";
+// import { api } from "~/utils/api";
+// import { Loader } from "~/components/Loader";
 import { type DisplayAlbum } from "~/types";
 import { useEffect, useRef, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Head from "next/head";
 import { AlbumGrid } from "./new";
 import { Switch } from "~/components/ui/switch";
 import { Label } from "~/components/ui/label";
+import React from "react";
 
 export default function AlbumsPage() {
   const [reviews, setReviews] = useState<DisplayAlbum[]>([]);
   const [displayType, setDisplayType] = useState<"grid" | "scroller">("grid");
 
-  const {
-    data: albumReviews,
-    isLoading,
-    isSuccess,
-    isError,
-  } = api.album.getAllReviews.useQuery();
+  // const {
+  //   data: albumReviews,
+  //   isLoading,
+  //   isSuccess,
+  //   isError,
+  // } = api.album.getAllReviews.useQuery();
 
-  useEffect(() => {
-    if (isSuccess) {
-      setReviews(albumReviews);
-      console.log(albumReviews);
-    }
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     setReviews(albumReviews);
+  //     console.log(albumReviews);
+  //   }
 
-    if (isError) {
-      toast.error("Error fetching albums.", {
-        progressStyle: {
-          backgroundColor: "#DC2626",
-        },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, isError]);
+  //   if (isError) {
+  //     toast.error("Error fetching albums.", {
+  //       progressStyle: {
+  //         backgroundColor: "#DC2626",
+  //       },
+  //     });
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isSuccess, isError]);
 
-  if (isLoading) {
-    return (
-      <div className="mx-auto mt-20 flex h-10 w-20 items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="mx-auto mt-20 flex h-10 w-20 items-center justify-center">
+  //       <Loader />
+  //     </div>
+  //   );
+  // }
 
-  if (isError) {
-    return (
-      <h2 className="m-16 text-xl text-[#D2D2D3]">Error fetching albums ☹️</h2>
-    );
-  }
+  // if (isError) {
+  //   return (
+  //     <h2 className="m-16 text-xl text-[#D2D2D3]">Error fetching albums ☹️</h2>
+  //   );
+  // }
 
   return (
     <>
@@ -57,7 +58,9 @@ export default function AlbumsPage() {
         <title>Albums</title>
       </Head>
       <div className="m-2 xl:m-10">
-        {/* Not happy with this feature yet, add 'lg:flex' to re-enable */}
+        {
+          //- Not happy with this feature yet, add 'lg:flex' to re-enable
+        }
         <div className="mb-4 hidden items-center space-x-2">
           <Switch
             id="displayToggle"
@@ -72,7 +75,7 @@ export default function AlbumsPage() {
         </div>
         {reviews ? (
           displayType === "grid" ? (
-            <AlbumGrid albums={reviews} controls />
+            <AlbumGrid controls />
           ) : (
             <AlbumScroller albums={reviews} />
           )
@@ -185,8 +188,8 @@ const AlbumScroller = ({ albums }: AlbumScrollerProps) => {
               focusedAlbum !== null && index === focusedAlbum
                 ? 199
                 : hoveredIndex !== null && index == hoveredIndex
-                ? 199
-                : albums.length - index,
+                  ? 199
+                  : albums.length - index,
             // marginBottom:
             //   focusedAlbum !== null && index === focusedAlbum ? 70 : 0,
             filter:

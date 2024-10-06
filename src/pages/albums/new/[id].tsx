@@ -13,6 +13,7 @@ import { ArtistProfile, TrackCard } from "~/pages/album/[id]";
 import Head from "next/head";
 import { BookmarkButton } from ".";
 import { calculateAlbumScore } from "~/helpers/calculateAlbumScore";
+import React from "react";
 
 export default function NewAlbumForm() {
   const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();

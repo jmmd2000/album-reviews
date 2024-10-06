@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useAuthContext } from "~/context/AuthContext";
 import Head from "next/head";
 import { useTokenContext } from "~/context/TokenContext";
+import React from "react";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();

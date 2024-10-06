@@ -9,14 +9,26 @@ import { RatingChip } from "~/components/RatingChip";
 import ResponsiveImage from "~/components/ResponsiveImage";
 import { toast } from "react-toastify";
 import Head from "next/head";
-import { VisibilityObserver } from "~/components/VisibilityObserver";
-import { Bookmark, BookmarkX } from "lucide-react";
+// import { VisibilityObserver } from "~/components/VisibilityObserver";
+import { Bookmark, BookmarkX, Search } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
 import { cva } from "class-variance-authority";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "~/components/ui/pagination";
+import React from "react";
+import { useURLInteraction } from "~/hooks/useURLInteraction";
+import { Button } from "~/components/ui/button";
 
 export default function NewAlbumPage() {
   const [searchResults, setSearchResults] = useState<DisplayAlbum[]>([]);
@@ -133,110 +145,130 @@ export default function NewAlbumPage() {
   );
 }
 
+export type SortValues =
+  | "all"
+  | "album-az"
+  | "album-za"
+  | "score-asc"
+  | "score-desc"
+  | "year-asc"
+  | "year-desc";
+
 interface AlbumGridProps {
-  albums: DisplayAlbum[];
+  albums?: DisplayAlbum[];
   controls?: boolean;
 }
 
 export const AlbumGrid = (props: AlbumGridProps) => {
   const { controls, albums } = props;
-  const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums);
-  const [sortKey, setSortKey] = useState("all");
+  const { createQueryString, setNewPathname, getSearchParams } =
+    useURLInteraction();
+  // const sortValue = getSearchParams("sort") as SortValues;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums ?? []);
 
-  const filterAlbums = (filterText: string) => {
-    const filteredAlbums: DisplayAlbum[] = albumGroup.filter((album) => {
-      const { name, artist_name, release_year } = album;
-      return (
-        name.toLowerCase().includes(filterText.toLowerCase()) ||
-        artist_name.toLowerCase().includes(filterText.toLowerCase()) ||
-        release_year.toString().includes(filterText)
-      );
-    });
+  const [sortKey, setSortKey] = useState<SortValues>(
+    getSearchParams("sort", "all") as SortValues,
+  );
+  useEffect(() => {
+    setSortKey(getSearchParams("sort", "all") as SortValues);
+  }, [getSearchParams]);
+  const [page, setPage] = useState(0);
 
-    return filteredAlbums;
+  const {
+    data: albumReviews,
+    isLoading,
+    isSuccess,
+    isError,
+    refetch,
+  } = api.album.getPaginatedReviews.useQuery({
+    page: page,
+    limit: 35,
+    sortValue: sortKey,
+    searchTerm: searchTerm,
+  });
+
+  const handleSearch = () => {
+    setSearchTerm(
+      (document.getElementById("searchInput") as HTMLInputElement).value,
+    );
+    refetch()
+      .then(() => {
+        // console.log("done");
+      })
+      .catch(() => {
+        toast.error("Error fetching search results.", {
+          autoClose: 5000,
+          progressStyle: {
+            backgroundColor: "#DC2626",
+          },
+        });
+      });
   };
 
   useEffect(() => {
-    setAlbumGroup(albums);
-  }, [albums]);
+    if (albums) {
+      setAlbumGroup(albums ?? []);
+    } else if (isSuccess) {
+      setAlbumGroup(albumReviews.displayAlbums);
+    } else if (isError) {
+      toast.error("Error fetching albums.", {
+        progressStyle: {
+          backgroundColor: "#DC2626",
+        },
+      });
+    }
+  }, [albumGroup, albumReviews, albums, isError, isSuccess]);
 
-  const sortAlbums = (sort: string) => {
+  const sortAlbums = async (sort: SortValues) => {
     //* This can only be called from the select, which only shows when albumGroup is AlbumReview[]. We can safely assume everything is AlbumReview[].
     //* Also update the sortKey to force a rerender of the off-screen cards.
-    let sortedAlbums = [...albumGroup];
 
-    switch (sort) {
-      case "all":
-        sortedAlbums = albums;
-        setSortKey("all");
-        break;
-      case "album-az":
-        sortedAlbums = sortedAlbums.sort((a, b) =>
-          a.name.localeCompare(b.name),
-        );
-        setSortKey("album-az");
-        break;
-      case "album-za":
-        sortedAlbums = sortedAlbums.sort((a, b) =>
-          b.name.localeCompare(a.name),
-        );
-        setSortKey("album-za");
-        break;
-      case "score-asc":
-        sortedAlbums = sortedAlbums.sort(
-          (a, b) => a.review_score! - b.review_score!,
-        );
-        setSortKey("score-asc");
-        break;
-      case "score-desc":
-        sortedAlbums = sortedAlbums.sort(
-          (a, b) => b.review_score! - a.review_score!,
-        );
-        setSortKey("score-desc");
-        break;
-      case "year-asc":
-        sortedAlbums = sortedAlbums.sort(
-          (a, b) => a.release_year - b.release_year,
-        );
-        setSortKey("year-asc");
-        break;
-      case "year-desc":
-        sortedAlbums = sortedAlbums.sort(
-          (a, b) => b.release_year - a.release_year,
-        );
-        setSortKey("year-desc");
-        break;
-      default:
-        sortedAlbums = albums;
-    }
-
-    setAlbumGroup(sortedAlbums);
+    await setNewPathname(createQueryString("sort", sort));
+    setSortKey(sort);
   };
 
   //! Really janky way to pass in the values
   //- TODO: Improve this
   return (
     <>
-      {albums && controls && (
+      {albumGroup && controls && (
         <div className="flex flex-col items-center justify-center gap-3 md:flex-row">
           <div className="flex flex-row items-center gap-2">
-            <input
-              type="text"
-              className="w-[70%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
-              placeholder="Filter by album name, artist or year..."
-              onChange={(e) => {
-                const filterText = e.target.value;
-                if (filterText.length === 0) {
-                  setAlbumGroup(albums);
-                } else {
-                  const filteredAlbums = filterAlbums(filterText);
-                  setAlbumGroup(filteredAlbums);
-                }
-              }}
-            />
+            <div className="flex flex-row items-center gap-[2px]">
+              <input
+                type="text"
+                className="w-[70%] rounded-l-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
+                placeholder="Filter by album name, artist or year..."
+                id="searchInput"
+                onChange={(e) => {
+                  if (e.target.value.length === 0) {
+                    handleSearch();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearch();
+                  }
+                }}
+              />
+              <Button
+                onClick={handleSearch}
+                className="h-[50px] rounded-none rounded-r-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600"
+              >
+                <Search size={20} />
+              </Button>
+            </div>
+
             <select
-              className="w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base "
-              onChange={(e) => sortAlbums(e.target.value)}
+              className="h-[50px] w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base"
+              onChange={(e) => {
+                sortAlbums(e.target.value as SortValues).catch((error) => {
+                  console.error("Error sorting albums:", error);
+                });
+              }}
+              value={sortKey ?? "all"}
             >
               <option
                 value="all"
@@ -283,41 +315,78 @@ export const AlbumGrid = (props: AlbumGridProps) => {
             </select>
           </div>
           <p className="text-[#d2d2d3a8] md:ml-auto">
-            {albumGroup.length} reviews
+            {albumReviews?.totalReviews} reviews
           </p>
         </div>
       )}
-      {/* To solve the problem of the album grid being full width, we need a conditional class to set the width to 70% and the max cols to 5, use the cname package */}
-      <div className="mx-auto grid w-full grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
+      {
+        //? To solve the problem of the album grid being full width, we need a conditional class to set the width to 70% and the max cols to 5, use the cname package
+        //? Removed the VisibilityObeserver in favour of pagination. To reenable, wrap below AlbumCard with the below code, and uncomment the visibility check in AlbumCard
+        // <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
+        //   {(isVisible) => (
+        //     <AlbumCard isVisible={isVisible}>
+        //   )}
+        // </VisibilityObserver>
+      }
+      <div className="mx-auto mb-5 grid w-full grid-cols-2 place-items-center gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-x-6 2xl:grid-cols-7">
         {albumGroup.length !== 0
           ? albumGroup.map((album) => (
-              <VisibilityObserver key={`${sortKey}-${album.spotify_id}`}>
-                {(isVisible) => (
-                  <AlbumCard
-                    spotify_id={album.spotify_id}
-                    key={`${sortKey}-${album.spotify_id}`}
-                    name={album.name}
-                    release_year={album.release_year}
-                    image_url={album.image_urls[1]?.url}
-                    artist={{
-                      name: album.artist_name,
-                      spotify_id: album.artist_spotify_id,
-                    }}
-                    isVisible={isVisible}
-                    bookmarked={album.bookmarked}
-                    score={album.review_score}
-                    size="default"
-                  />
-                )}
-              </VisibilityObserver>
+              <AlbumCard
+                spotify_id={album.spotify_id}
+                key={`${sortKey}-${album.spotify_id}`}
+                name={album.name}
+                release_year={album.release_year}
+                image_url={album.image_urls[1]?.url}
+                artist={{
+                  name: album.artist_name,
+                  spotify_id: album.artist_spotify_id,
+                }}
+                bookmarked={album.bookmarked}
+                score={album.review_score}
+                size="default"
+              />
             ))
           : null}
       </div>
+      {albumReviews && controls && (
+        <div className="mt-5">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage((prev) => prev - 1)}
+                  disabled={page === 0}
+                />
+              </PaginationItem>
+              {page !== 0 ? (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : null}
+              <PaginationItem>
+                <PaginationLink>
+                  {isLoading ? <Loader size={25} /> : page + 1}
+                </PaginationLink>
+              </PaginationItem>
+              {page + 1 < albumReviews.totalPages ? (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : null}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage((prev) => prev + 1)}
+                  disabled={page + 1 === albumReviews.totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </>
   );
 };
 
-// type AlbumReview = RouterOutputs["album"]["getAll"][number];
 interface AlbumCardProps {
   spotify_id: string;
   name: string;
@@ -328,7 +397,7 @@ interface AlbumCardProps {
     spotify_id: string | undefined;
   };
   score?: number;
-  isVisible?: boolean;
+  // isVisible?: boolean;
   bookmarked?: boolean;
   size?: "default" | "small";
 }
@@ -399,9 +468,9 @@ export const AlbumCard = (props: AlbumCardProps) => {
 
   const artistLink = `/artist/${props.artist?.spotify_id}`;
 
-  if (!props.isVisible) {
-    return null;
-  }
+  // if (!props.isVisible) {
+  //   return null;
+  // }
 
   return (
     <div className={cardContainer({ size: props.size })} ref={cardRef}>
@@ -426,9 +495,8 @@ export const AlbumCard = (props: AlbumCardProps) => {
                 href={artistLink}
               >
                 <HoverCard>
-                  {/* This trigger is basically an <a> so it causes a minor error because you can't have a link within a link */}
-                  <HoverCardTrigger>
-                    <p>{trimString(props.artist.name, 16)}</p>
+                  <HoverCardTrigger asChild>
+                    <span>{trimString(props.artist.name, 16)}</span>
                   </HoverCardTrigger>
                   <HoverCardContent>
                     <ArtistHoverInfo
@@ -488,16 +556,16 @@ export const BookmarkButton = (props: BookmarkButtonProps) => {
     isHovering && bookmarked
       ? "#dc2626"
       : bookmarked
-      ? "#22c55e"
-      : "transparent";
+        ? "#22c55e"
+        : "transparent";
   const strokeColor =
     isHovering && bookmarked
       ? "white"
       : bookmarked
-      ? "#22c55e"
-      : isHovering
-      ? "#22c55e"
-      : "#717171";
+        ? "#22c55e"
+        : isHovering
+          ? "#22c55e"
+          : "#717171";
 
   return (
     <button
