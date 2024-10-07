@@ -185,9 +185,9 @@ const CurrentlyPlaying = () => {
   }
 
   return (
-    <div className="fixed bottom-3 right-3 flex min-w-max flex-col items-start gap-2 rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600 xl:w-24 xl:text-base">
+    <div className="fixed bottom-3 right-3 flex w-auto min-w-72 max-w-full flex-col items-start gap-2 whitespace-nowrap rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600">
       <p className="text-sm text-[#d2d2d3]">I&apos;m currently listening to:</p>
-      <div className="flex flex-row gap-2">
+      <div className="flex w-auto flex-row gap-2">
         {data?.image && (
           <Image
             src={data?.image}
@@ -196,12 +196,12 @@ const CurrentlyPlaying = () => {
             height={64}
           />
         )}
-        <div className="flex flex-col">
+        <div className="flex w-auto flex-col">
           {data?.name && (
             <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
           )}
           <p className="text-xs">{data?.artist}</p>
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex w-full flex-row items-center gap-2">
             {data?.durationElapsed && data?.durationMS && (
               <>
                 <Progress
