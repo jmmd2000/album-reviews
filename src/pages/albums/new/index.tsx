@@ -163,7 +163,6 @@ export const AlbumGrid = (props: AlbumGridProps) => {
   const { controls, albums } = props;
   const { createQueryString, setNewPathname, getSearchParams } =
     useURLInteraction();
-  // const sortValue = getSearchParams("sort") as SortValues;
   const [searchTerm, setSearchTerm] = useState("");
   const [albumGroup, setAlbumGroup] = useState<DisplayAlbum[]>(albums ?? []);
 
@@ -535,7 +534,7 @@ export const AlbumCard = (props: AlbumCardProps) => {
   );
 };
 
-const trimString = (str: string, length: number) => {
+export const trimString = (str: string, length: number) => {
   return str.length > length ? str.substring(0, length) + "..." : str;
 };
 

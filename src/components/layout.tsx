@@ -6,12 +6,15 @@ import { useAuthContext } from "~/context/AuthContext";
 import { api } from "~/utils/api";
 import { Analytics } from "@vercel/analytics/react";
 import React from "react";
+import { trimString } from "~/pages/albums/new";
+import { Progress } from "./ui/progress";
 
 export const Layout = (props: PropsWithChildren) => {
   return (
     <>
       <Navbar />
       <main>{props.children}</main>
+      <CurrentlyPlaying />
       <Analytics />
     </>
   );
@@ -164,5 +167,53 @@ const PasswordInput = () => {
         </button>
       </div>
     </>
+  );
+};
+
+const CurrentlyPlaying = () => {
+  const { data } = api.album.getCurrentlyPlaying.useQuery();
+
+  useEffect(() => {
+    if (data) {
+      console.log(data?.name, data?.artist, data?.image);
+    }
+  }, [data]);
+
+  if (data?.durationElapsed && data?.durationMS) {
+    console.log(data?.durationElapsed, data?.durationMS);
+    console.log((data?.durationElapsed / data?.durationMS) * 100);
+  }
+
+  return (
+    <div className="fixed bottom-3 right-3 flex min-w-max flex-col items-start gap-2 rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600 xl:w-24 xl:text-base">
+      <p className="text-sm text-[#d2d2d3]">I&apos;m currently listening to:</p>
+      <div className="flex flex-row gap-2">
+        {data?.image && (
+          <Image
+            src={data?.image}
+            alt="Currently playing album cover"
+            width={64}
+            height={64}
+          />
+        )}
+        <div className="flex flex-col">
+          {data?.name && (
+            <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
+          )}
+          <p className="text-xs">{data?.artist}</p>
+          <div className="flex flex-row items-center gap-2">
+            {data?.durationElapsed && data?.durationMS && (
+              <>
+                <Progress
+                  value={(data?.durationElapsed / data?.durationMS) * 100}
+                  className="h-1 w-full rounded-sm bg-gray-700"
+                />
+                <p className="text-xs">{data?.durationString}</p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

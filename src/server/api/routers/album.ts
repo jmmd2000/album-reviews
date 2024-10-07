@@ -4,11 +4,13 @@ import type {
   DisplayAlbum,
   SpotifyAlbum,
   SpotifyArtist,
+  SpotifyCurrentlyPlaying,
   SpotifyImage,
 } from "~/types";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { type BookmarkedAlbum } from "@prisma/client";
+import { env } from "~/env.mjs";
 
 const ScoredTrackSchema = z.object({
   track_id: z.string(),
@@ -866,4 +868,79 @@ export const albumRouter = createTRPCRouter({
 
       return !!album;
     }),
+  getCurrentlyPlaying: publicProcedure.query(async () => {
+    // Function to refresh the Spotify access token
+    async function refreshAccessToken(): Promise<string> {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: env.SPOTIFY_REFRESH_TOKEN,
+          client_id: env.SPOTIFY_CLIENT_ID,
+          client_secret: env.SPOTIFY_CLIENT_SECRET,
+        }).toString(),
+      });
+
+      const data = (await response.json()) as {
+        access_token: string;
+        token_type: string;
+        expires_in: number;
+      };
+      return data.access_token;
+    }
+
+    // Use the refresh token to get a new access token
+    const accessToken = await refreshAccessToken();
+
+    const searchParameters = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`, // Correctly format the Authorization header
+      },
+    };
+
+    try {
+      const response: Response = await fetch(
+        "https://api.spotify.com/v1/me/player/currently-playing",
+        searchParameters,
+      );
+      if (!response.ok) {
+        console.error(
+          "Error fetching currently playing track1:",
+          response.statusText,
+        );
+      } else {
+        const data = (await response.json()) as SpotifyCurrentlyPlaying;
+
+        let durationString;
+        let durationMinutes = Math.floor(data.item.duration_ms / 60000);
+        // format the duration to be in the format of 3:30
+        durationMinutes = Math.floor(durationMinutes);
+        const durationSeconds = Math.floor(
+          (data.item.duration_ms % 60000) / 1000,
+        );
+
+        if (durationSeconds < 10) {
+          durationString = durationMinutes + ":0" + durationSeconds;
+        } else {
+          durationString = durationMinutes + ":" + durationSeconds;
+        }
+
+        return {
+          name: data.item.name,
+          artist: data.item?.artists[0]?.name,
+          image: data.item.album.images[2]?.url,
+          durationString,
+          durationMS: data.item.duration_ms,
+          durationElapsed: data.progress_ms,
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching currently playing track2:", error);
+    }
+  }),
 });
