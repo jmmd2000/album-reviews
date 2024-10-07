@@ -171,23 +171,21 @@ const PasswordInput = () => {
 };
 
 const CurrentlyPlaying = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { data } = api.album.getCurrentlyPlaying.useQuery();
-
-  useEffect(() => {
-    if (data) {
-      console.log(data?.name, data?.artist, data?.image);
-    }
-  }, [data]);
-
-  if (data?.durationElapsed && data?.durationMS) {
-    console.log(data?.durationElapsed, data?.durationMS);
-    console.log((data?.durationElapsed / data?.durationMS) * 100);
-  }
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <div className="fixed bottom-3 right-3 flex w-auto min-w-72 max-w-full flex-col items-start gap-2 whitespace-nowrap rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition hover:bg-gray-600">
-      <p className="text-sm text-[#d2d2d3]">I&apos;m currently listening to:</p>
-      <div className="flex w-auto flex-row gap-2">
+    <div
+      className={`fixed bottom-3 right-3 flex ${isCollapsed ? "w-16" : "w-72"} flex-col items-start gap-2 whitespace-nowrap rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:cursor-pointer hover:bg-gray-700 `}
+      onClick={toggleCollapse}
+    >
+      {!isCollapsed && (
+        <p className="text-sm text-[#d2d2d3]">
+          I&apos;m currently listening to:
+        </p>
+      )}
+      <div className="flex w-full flex-row gap-2">
         {data?.image && (
           <Image
             src={data?.image}
@@ -196,24 +194,77 @@ const CurrentlyPlaying = () => {
             height={64}
           />
         )}
-        <div className="flex w-auto flex-col">
-          {data?.name && (
-            <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
-          )}
-          <p className="text-xs">{data?.artist}</p>
-          <div className="flex w-full flex-row items-center gap-2">
-            {data?.durationElapsed && data?.durationMS && (
-              <>
-                <Progress
-                  value={(data?.durationElapsed / data?.durationMS) * 100}
-                  className="h-1 w-full rounded-sm bg-gray-700"
-                />
-                <p className="text-xs">{data?.durationString}</p>
-              </>
+        {!isCollapsed && (
+          <div className="flex w-full flex-col overflow-hidden">
+            {data?.name && (
+              <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
             )}
+            <p className="text-xs">{data?.artist}</p>
+            <div className="flex w-full flex-row items-center gap-2">
+              {data?.durationElapsed && data?.durationMS && (
+                <>
+                  <Progress
+                    value={(data?.durationElapsed / data?.durationMS) * 100}
+                    className="h-1 w-full rounded-sm bg-gray-700"
+                  />
+                  <p className="text-xs">{data?.durationString}</p>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
+
+// const CurrentlyPlaying = () => {
+//   const { data } = api.album.getCurrentlyPlaying.useQuery();
+//   const [isCollapsed, setIsCollapsed] = useState(false);
+
+//   useEffect(() => {
+//     if (data) {
+//       console.log(data?.name, data?.artist, data?.image);
+//     }
+//     if (data?.durationElapsed && data?.durationMS) {
+//       console.log(data?.durationElapsed, data?.durationMS);
+//       console.log((data?.durationElapsed / data?.durationMS) * 100);
+//     }
+//   }, [data]);
+
+//   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+
+//   return (
+//     <div className={`fixed bottom-3 right-3 flex ${isCollapsed ? 'w-16' : 'w-auto min-w-72 max-w-full'} flex-col items-start gap-2 whitespace-nowrap rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out`}
+//          onClick={toggleCollapse}>
+//       {data?.image && (
+//         <Image
+//           src={data?.image}
+//           alt="Currently playing album cover"
+//           width={64}
+//           height={64}
+//           className="block"
+//         />
+//       )}
+//       {!isCollapsed && (
+//         <div className="flex w-full flex-col overflow-hidden">
+//           {data?.name && (
+//             <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
+//           )}
+//           <p className="text-xs">{data?.artist}</p>
+//           <div className="flex w-full flex-row items-center gap-2">
+//             {data?.durationElapsed && data?.durationMS && (
+//               <>
+//                 <Progress
+//                   value={(data?.durationElapsed / data?.durationMS) * 100}
+//                   className="h-1 w-full rounded-sm bg-gray-700"
+//                 />
+//                 <p className="text-xs">{data?.durationString}</p>
+//               </>
+//             )}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };

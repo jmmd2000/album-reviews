@@ -58,7 +58,7 @@ const PaginationLink = ({
         size,
       }),
       className,
-      "my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600",
+      "my-8 rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm transition hover:bg-gray-600 hover:text-[#D2D2D3]",
     )}
     {...props}
   />
