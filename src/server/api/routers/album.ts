@@ -588,6 +588,7 @@ export const albumRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       let options = {};
+      let reviewCount = 0;
 
       const sortValue = input.sortValue;
       let orderBy = {};
@@ -678,6 +679,7 @@ export const albumRouter = createTRPCRouter({
           skip: input.page * input.limit,
           take: input.limit,
         };
+        reviewCount = await ctx.prisma.reviewedAlbum.count({ where });
       } else {
         options = {
           include: {
@@ -687,6 +689,7 @@ export const albumRouter = createTRPCRouter({
           skip: input.page * input.limit,
           take: input.limit,
         };
+        reviewCount = await ctx.prisma.reviewedAlbum.count();
       }
 
       const reviews = ctx.prisma.reviewedAlbum.findMany({
@@ -708,8 +711,6 @@ export const albumRouter = createTRPCRouter({
           review_score: album.review_score,
         };
       });
-
-      const reviewCount = await ctx.prisma.reviewedAlbum.count({ where });
 
       return {
         displayAlbums,

@@ -234,12 +234,12 @@ export const AlbumGrid = (props: AlbumGridProps) => {
     <>
       {albumGroup && controls && (
         <div className="flex flex-col items-center justify-center gap-3 md:flex-row">
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-col items-center gap-2 sm:flex-row">
             <div className="flex flex-row items-center gap-[2px]">
               <input
                 type="text"
-                className="w-[70%] rounded-l-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm  placeholder:text-[#d2d2d3a8] md:w-80"
-                placeholder="Filter by album name, artist or year..."
+                className="w-full rounded-l-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-base text-[#D2D2D3] shadow-lg backdrop-blur-sm placeholder:text-sm placeholder:text-[#d2d2d3a8]"
+                placeholder="Filter by name, artist or year..."
                 id="searchInput"
                 onChange={(e) => {
                   if (e.target.value.length === 0) {
@@ -262,7 +262,7 @@ export const AlbumGrid = (props: AlbumGridProps) => {
             </div>
 
             <select
-              className="h-[50px] w-[30%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-36 xl:text-base"
+              className="h-[50px] w-[50%] rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition sm:w-[30%] md:w-36 xl:text-base"
               onChange={(e) => {
                 sortAlbums(e.target.value as SortValues).catch((error) => {
                   console.error("Error sorting albums:", error);
@@ -314,9 +314,11 @@ export const AlbumGrid = (props: AlbumGridProps) => {
               </option>
             </select>
           </div>
-          <p className="text-[#d2d2d3a8] md:ml-auto">
-            {albumReviews?.totalReviews} reviews
-          </p>
+          {albumReviews && (
+            <p className="text-[#d2d2d3a8] md:ml-auto">
+              {albumReviews.totalReviews} reviews
+            </p>
+          )}
         </div>
       )}
       {
