@@ -313,8 +313,9 @@ export const AlbumGrid = (props: AlbumGridProps) => {
               </option>
             </select>
           </div>
+          <span className="md:ml-auto"></span>
           {albumReviews && (
-            <p className="text-[#d2d2d3a8] md:ml-auto">
+            <p className="text-[#d2d2d3a8] ">
               {albumReviews.totalReviews} reviews
             </p>
           )}

@@ -937,6 +937,7 @@ export const albumRouter = createTRPCRouter({
           durationString,
           durationMS: data.item.duration_ms,
           durationElapsed: data.progress_ms,
+          currentlyPlaying: data.is_playing,
         };
       }
     } catch (error) {
