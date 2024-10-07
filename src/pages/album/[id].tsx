@@ -149,7 +149,6 @@ export const ArtistProfile = (props: ArtistProfileProps) => {
     {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
-      enabled: false,
     },
   );
 

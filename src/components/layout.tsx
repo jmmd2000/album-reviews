@@ -175,6 +175,10 @@ const CurrentlyPlaying = () => {
   const { data } = api.album.getCurrentlyPlaying.useQuery();
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
+  if (!data?.currentlyPlaying) {
+    return null;
+  }
+
   return (
     <div
       className={`fixed bottom-3 right-3 flex ${isCollapsed ? "w-16" : "w-72"} flex-col items-start gap-2 whitespace-nowrap rounded-md border border-[#272727] bg-gray-800 bg-opacity-30 bg-clip-padding p-2 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out hover:cursor-pointer hover:bg-gray-700 `}
@@ -197,7 +201,7 @@ const CurrentlyPlaying = () => {
         {!isCollapsed && (
           <div className="flex w-full flex-col overflow-hidden">
             {data?.name && (
-              <p className="text-[#D2D2D3]">{trimString(data?.name, 30)}</p>
+              <p className="text-[#D2D2D3]">{trimString(data?.name, 25)}</p>
             )}
             <p className="text-xs">{data?.artist}</p>
             <div className="flex w-full flex-row items-center gap-2">
