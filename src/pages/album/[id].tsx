@@ -52,7 +52,7 @@ export default function AlbumDetail() {
       <Head>
         <title>{album?.name}</title>
       </Head>
-      <div className="mx-auto mt-12 flex w-full flex-col items-center sm:w-[70%]">
+      <div className="mx-auto mb-28 mt-12 flex w-full flex-col items-center sm:w-[70%]">
         {album ? (
           <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
             <img
