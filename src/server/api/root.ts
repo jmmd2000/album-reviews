@@ -2,6 +2,7 @@ import { albumRouter } from "~/server/api/routers/album";
 import { createTRPCRouter } from "~/server/api/trpc";
 import { artistRouter } from "./routers/artist";
 import { spotifyRouter } from "./routers/spotify";
+import { modifierRuleRouter } from "./routers/modifierRule";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   album: albumRouter,
   artist: artistRouter,
   spotify: spotifyRouter,
+  modifierRule: modifierRuleRouter,
 });
 
 // export type definition of API

@@ -9,6 +9,9 @@ import {
 } from "~/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+const GOOD_ALBUM_BONUS = 0.25;
+const BAD_ALBUM_BONUS = -0.25;
+
 export const artistRouter = createTRPCRouter({
   //* This returns all artists and their albums
   getAllArtists: publicProcedure.query(({ ctx }) => {
@@ -59,7 +62,7 @@ export const artistRouter = createTRPCRouter({
         image_urls: tempArtist?.image_urls,
         leaderboard_position: tempArtist?.leaderboard_position,
         albums: displayAlbums,
-        average_score: tempArtist?.average_score,
+        total_score: tempArtist?.total_score,
       };
     }),
 
@@ -70,7 +73,7 @@ export const artistRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const artists = await ctx.prisma.artist.findMany({
         orderBy: {
-          average_score: "desc",
+          total_score: "desc",
         },
         take: input,
         include: {
@@ -128,11 +131,10 @@ export const artistRouter = createTRPCRouter({
             spotify_id: input,
           },
         },
-        include: {
-          artist: true,
-        },
+        // include: {
+        //   artist: true,
+        // },
       });
-
       return albums as AlbumReview[];
     }),
   updateArtistImages: publicProcedure
@@ -196,4 +198,82 @@ export const artistRouter = createTRPCRouter({
       console.log(`Artist images updated successfully!!!!! ${Date.now()}`);
       return true;
     }),
+  recalculateArtistScores: publicProcedure.mutation(async ({ ctx }) => {
+    try {
+      const artists = await ctx.prisma.artist.findMany({
+        include: {
+          albums: true,
+        },
+      });
+
+      for (const artist of artists) {
+        const albums = artist.albums as AlbumReview[];
+        const { newAverageScore, newBonusPoints } = calculateArtistScore(
+          albums,
+          null,
+        );
+
+        let totalScore = newAverageScore + newBonusPoints;
+        if (totalScore > 100) {
+          totalScore = 100;
+        }
+
+        await ctx.prisma.artist.update({
+          where: { id: artist.id },
+          data: {
+            average_score: newAverageScore,
+            bonus_points: newBonusPoints,
+            total_score: totalScore,
+          },
+        });
+      }
+    } catch (error) {
+      console.error(`Error recalculating artist scores: ${String(error)}`);
+      return false;
+    }
+
+    console.log(`Artist scores recalculated successfully!!!!! ${Date.now()}`);
+    return true;
+  }),
 });
+
+// -------------------- //
+// - HELPER FUNCTIONS - //
+// -------------------- //
+
+//? This function takes an array of albums and calculates the artist's score.
+//? If this is called while adding a new album, the array of albums doesn't include the new album yet, so it needs to be accounted for.
+//* albums: AlbumReview[] - An array of albums to calculate the score for
+//* existingScore: number | null - In the case that this is being called while adding a new album, this is the artist's current score
+export const calculateArtistScore = (
+  albums: AlbumReview[],
+  existingScore: number | null,
+) => {
+  let newAverageScore = existingScore ?? 0;
+  let newBonusPoints = 0;
+
+  for (const album of albums) {
+    newAverageScore += album.review_score;
+  }
+
+  if (albums.length > 2) {
+    //* Calculate bonus points only for every album after the first 2
+    const albumsToConsider = albums.slice(2);
+    for (const album of albumsToConsider) {
+      if (album.review_score < 45) {
+        newBonusPoints -= BAD_ALBUM_BONUS;
+      } else if (album.review_score > 55) {
+        newBonusPoints += GOOD_ALBUM_BONUS;
+      }
+    }
+  }
+
+  //* If this is being called while adding a new album, the array of albums doesn't include the new album yet
+  if (existingScore) {
+    newAverageScore = newAverageScore / (albums.length + 1);
+  } else {
+    newAverageScore = newAverageScore / albums.length;
+  }
+
+  return { newAverageScore, newBonusPoints };
+};

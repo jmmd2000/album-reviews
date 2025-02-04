@@ -11,6 +11,7 @@ import type {
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { type BookmarkedAlbum } from "@prisma/client";
 import { env } from "~/env.mjs";
+import { calculateArtistScore } from "./artist";
 
 const ScoredTrackSchema = z.object({
   track_id: z.string(),
@@ -127,18 +128,17 @@ export const albumRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       let albumScore = 0;
-      //* remove tracks that have a score of 0
+      //* remove tracks that have a score of 0, these are the "Non-song" tracks
       const filteredTracks = input.scored_tracks.filter(
         (track) => track.rating !== 0,
       );
-
       //* add up all the scores
       filteredTracks.forEach((track) => {
         albumScore += track.rating;
       });
-
       const maxScore = filteredTracks.length * 10;
       const percentageScore = (albumScore / maxScore) * 100;
+
       //* round to 0 decimal places
       const roundedScore = Math.round(percentageScore);
 
@@ -154,7 +154,10 @@ export const albumRouter = createTRPCRouter({
 
       let artistData = null;
       let createdArtist = null;
+
+      //* ---------------------------------------------------------
       //* If artist doesn't exist, create it with data from spotify
+      //* ---------------------------------------------------------
       if (!foundArtist) {
         const accessToken = input.access_token;
 
@@ -183,7 +186,10 @@ export const albumRouter = createTRPCRouter({
           };
         } catch (err) {
           //! Need to handle this error
+          console.error("Error fetching artist data from Spotify:", err);
+          throw new Error("Failed to fetch artist data from Spotify");
         }
+        //* If the data from spotify is valid, create the artist in the database
         if (artistData !== null) {
           try {
             createdArtist = await ctx.prisma.artist.create({
@@ -191,16 +197,23 @@ export const albumRouter = createTRPCRouter({
             });
           } catch (err) {
             //! Need to handle this error
+            console.error("Error creating artist in database:", err);
+            throw new Error("Failed to create artist in database");
           }
         }
-      } else {
-        let newAverageScore = roundedScore;
+      }
+      //* ------------------------------------------
+      //* if artist exists, update the average score
+      //* ------------------------------------------
+      if (foundArtist) {
+        const { newAverageScore, newBonusPoints } = calculateArtistScore(
+          foundArtist.albums as AlbumReview[],
+          roundedScore,
+        );
 
-        if (foundArtist) {
-          for (const album of foundArtist?.albums) {
-            newAverageScore += album.review_score!;
-          }
-          newAverageScore = newAverageScore / (foundArtist?.albums.length + 1);
+        let totalScore = newAverageScore + newBonusPoints;
+        if (totalScore > 100) {
+          totalScore = 100;
         }
 
         await ctx.prisma.artist.update({
@@ -209,11 +222,13 @@ export const albumRouter = createTRPCRouter({
           },
           data: {
             average_score: newAverageScore,
+            bonus_points: newBonusPoints,
+            total_score: totalScore,
           },
         });
       }
 
-      // Check if the album is bookmarked, if it is, remove it from bookmarks
+      //* Check if the album is bookmarked, if it is, remove it from bookmarks
       const bookmarkedAlbum = await ctx.prisma.bookmarkedAlbum.findUnique({
         where: {
           spotify_id: input.album.id,
@@ -228,6 +243,7 @@ export const albumRouter = createTRPCRouter({
         });
       }
 
+      //! could be handled better
       let finalArtist = null;
       if (foundArtist !== null) {
         finalArtist = foundArtist;
@@ -260,10 +276,10 @@ export const albumRouter = createTRPCRouter({
         },
       });
 
-      //* Get all artists, sort them by average score and update their leaderboard position
+      //* Get all artists, sort them by total score and update their leaderboard position
       const allArtists = await ctx.prisma.artist.findMany({
         orderBy: {
-          average_score: "desc",
+          total_score: "desc",
         },
       });
 
@@ -282,6 +298,7 @@ export const albumRouter = createTRPCRouter({
 
       return test;
     }),
+
   //* This allows the user to get X number of albums based on a field
   getAlbumsByField: publicProcedure
     .input(z.object({ count: z.number(), field: z.string(), sort: z.string() }))
@@ -326,9 +343,10 @@ export const albumRouter = createTRPCRouter({
 
       return displayAlbums;
     }),
-  //'--------------------
+
+  //---------------------
   //* UPDATE ALBUM REVIEW
-  //'--------------------
+  //---------------------
   updateAlbumReview: publicProcedure
     .input(
       z.object({
@@ -414,10 +432,10 @@ export const albumRouter = createTRPCRouter({
           },
         });
 
-        //* Get all artists, sort them by average score and update their leaderboard position
+        //* Get all artists, sort them by total score and update their leaderboard position
         const allArtists = await ctx.prisma.artist.findMany({
           orderBy: {
-            average_score: "desc",
+            total_score: "desc",
           },
         });
 
@@ -527,10 +545,10 @@ export const albumRouter = createTRPCRouter({
         }
       }
 
-      //* Get all artists, sort them by average score and update their leaderboard position
+      //* Get all artists, sort them by total score and update their leaderboard position
       const allArtists = await ctx.prisma.artist.findMany({
         orderBy: {
-          average_score: "desc",
+          total_score: "desc",
         },
       });
 
@@ -579,6 +597,7 @@ export const albumRouter = createTRPCRouter({
 
     return displayAlbums;
   }),
+
   getPaginatedReviews: publicProcedure
     .input(
       z.object({
@@ -720,6 +739,7 @@ export const albumRouter = createTRPCRouter({
         totalPages: Math.ceil(reviewCount / input.limit),
       };
     }),
+
   //* This returns a specific album review by its spotify id
   getReviewById: publicProcedure.input(z.string()).query(({ ctx, input }) => {
     const review = ctx.prisma.reviewedAlbum.findUnique({
@@ -732,6 +752,7 @@ export const albumRouter = createTRPCRouter({
     });
     return review;
   }),
+
   toggleAlbumBookmark: publicProcedure
     .input(z.object({ id: z.string(), accessToken: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -790,6 +811,7 @@ export const albumRouter = createTRPCRouter({
         };
       }
     }),
+
   getAllBookmarkedAlbums: publicProcedure.query(async ({ ctx }) => {
     const bookmarks = ctx.prisma.bookmarkedAlbum.findMany();
     console.log(bookmarks);
@@ -821,7 +843,7 @@ export const albumRouter = createTRPCRouter({
 
     return displayAlbums;
   }),
-  // This returns a random album from the
+
   chooseRandomBookmarkedAlbum: publicProcedure.query(async ({ ctx }) => {
     const bookmarks = ctx.prisma.bookmarkedAlbum.findMany();
     const tempBookmarks = [
@@ -857,6 +879,7 @@ export const albumRouter = createTRPCRouter({
       bookmarked: true,
     };
   }),
+
   checkIfAlbumIsBookmarked: publicProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
@@ -868,6 +891,7 @@ export const albumRouter = createTRPCRouter({
 
       return !!album;
     }),
+
   getCurrentlyPlaying: publicProcedure.query(async () => {
     // Function to refresh the Spotify access token
     async function refreshAccessToken(): Promise<string> {

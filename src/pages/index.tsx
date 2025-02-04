@@ -28,7 +28,7 @@ const IntroductoryText = () => {
     "Brilliant",
     "Great",
     "Good",
-    "Decent",
+    "Meh",
     "OK",
     "Bad",
     "Awful",

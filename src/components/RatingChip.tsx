@@ -29,7 +29,7 @@ export const RatingCard = (props: {
           Brilliant: "text-blue-600 bg-blue-600 border-blue-600",
           Great: "text-cyan-600 bg-cyan-600 border-cyan-600",
           Good: "text-emerald-600 bg-emerald-600 border-emerald-600",
-          Decent: "text-lime-600 bg-lime-600 border-lime-600",
+          Meh: "text-lime-600 bg-lime-600 border-lime-600",
           OK: "text-yellow-600 bg-yellow-600 border-yellow-600",
           Bad: "text-orange-600 bg-orange-600 border-orange-600",
           Awful: "text-red-600 bg-red-600 border-red-600",
@@ -55,7 +55,7 @@ export const RatingCard = (props: {
         Brilliant: "text-blue-600",
         Great: "text-cyan-600",
         Good: "text-emerald-600",
-        Decent: "text-lime-600",
+        Meh: "text-lime-600",
         OK: "text-yellow-600",
         Bad: "text-orange-600",
         Awful: "text-red-600",
@@ -100,7 +100,7 @@ export const RatingChip = (props: {
     | "Brilliant"
     | "Great"
     | "Good"
-    | "Decent"
+    | "Meh"
     | "OK"
     | "Bad"
     | "Awful"
@@ -119,7 +119,7 @@ export const RatingChip = (props: {
   } else if (ratingNumber >= 31 && ratingNumber <= 40) {
     ratingString = "OK";
   } else if (ratingNumber >= 41 && ratingNumber <= 50) {
-    ratingString = "Decent";
+    ratingString = "Meh";
   } else if (ratingNumber >= 51 && ratingNumber <= 60) {
     ratingString = "Good";
   } else if (ratingNumber >= 61 && ratingNumber <= 70) {
@@ -154,7 +154,7 @@ export const RatingChip = (props: {
           Brilliant: "text-blue-600 bg-blue-600 border-blue-600",
           Great: "text-cyan-600 bg-cyan-600 border-cyan-600",
           Good: "text-emerald-600 bg-emerald-600 border-emerald-600",
-          Decent: "text-lime-600 bg-lime-600 border-lime-600",
+          Meh: "text-lime-600 bg-lime-600 border-lime-600",
           OK: "text-yellow-600 bg-yellow-600 border-yellow-600",
           Bad: "text-orange-600 bg-orange-600 border-orange-600",
           Awful: "text-red-600 bg-red-600 border-red-600",
@@ -180,7 +180,7 @@ export const RatingChip = (props: {
         Brilliant: "text-blue-600",
         Great: "text-cyan-600",
         Good: "text-emerald-600",
-        Decent: "text-lime-600",
+        Meh: "text-lime-600",
         OK: "text-yellow-600",
         Bad: "text-orange-600",
         Awful: "text-red-600",
@@ -200,7 +200,7 @@ export const RatingChip = (props: {
         Brilliant: "text-blue-600",
         Great: "text-cyan-600",
         Good: "text-emerald-600",
-        Decent: "text-lime-600",
+        Meh: "text-lime-600",
         OK: "text-yellow-600",
         Bad: "text-orange-600",
         Awful: "text-red-600",
@@ -246,7 +246,7 @@ export function getRatingString(rating: RatingChipValues) {
     case 6:
       return "Good";
     case 5:
-      return "Decent";
+      return "Meh";
     case 4:
       return "OK";
     case 3:

@@ -116,13 +116,13 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
         break;
       case "score-asc":
         sortedArtists = sortedArtists.sort(
-          (a, b) => a.average_score - b.average_score,
+          (a, b) => a.total_score - b.total_score,
         );
         setSortKey("score-asc");
         break;
       case "score-desc":
         sortedArtists = sortedArtists.sort(
-          (a, b) => b.average_score - a.average_score,
+          (a, b) => b.total_score - a.total_score,
         );
         setSortKey("score-desc");
         break;
@@ -228,7 +228,7 @@ export const ArtistGrid = (props: { artists: ReviewedArtist[] }) => {
                 name={artist.name}
                 image_urls={artist.image_urls}
                 leaderboard_position={artist.leaderboard_position}
-                average_score={artist.average_score}
+                total_score={artist.total_score}
                 key={artist.spotify_id}
                 num_albums={artist.albums.length}
                 isVisible={isVisible}
@@ -247,7 +247,7 @@ export const ArtistCard = (props: {
   image_urls: string;
   leaderboard_position: number;
   num_albums: number;
-  average_score: number;
+  total_score: number;
   isVisible: boolean;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -285,10 +285,10 @@ export const ArtistCard = (props: {
               Rank #{props.leaderboard_position}
             </p>
           </div>
-          {props.average_score ? (
+          {props.total_score ? (
             <div className="absolute bottom-0 right-0">
               <RatingChip
-                ratingNumber={Math.round(props.average_score)}
+                ratingNumber={Math.round(props.total_score)}
                 form="small"
               />
             </div>

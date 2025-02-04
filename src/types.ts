@@ -84,6 +84,10 @@ export interface ReviewedArtist {
   leaderboard_position: number;
   albums: DisplayAlbum[];
   average_score: number;
+  bonus_points: number;
+  bonus_reason: string | null;
+  total_score: number;
+  image_updated_at: Date;
 }
 
 export interface ReviewedTrack {
@@ -188,7 +192,7 @@ export type RatingValue =
   | "Brilliant"
   | "Great"
   | "Good"
-  | "Decent"
+  | "Meh"
   | "OK"
   | "Bad"
   | "Awful"

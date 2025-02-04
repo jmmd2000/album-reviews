@@ -634,9 +634,9 @@ const ArtistHoverInfo = (props: ArtistHoverInfoProps) => {
         )}
 
         <div className="ml-auto">
-          {data?.average_score && props.reviewed && (
+          {data?.total_score && props.reviewed && (
             <RatingChip
-              ratingNumber={Math.round(data.average_score)}
+              ratingNumber={Math.round(data.total_score)}
               form="small"
             />
           )}

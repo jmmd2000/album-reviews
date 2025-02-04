@@ -89,10 +89,10 @@ export default function ArtistDetail() {
                 </p>
               </div>
             </div>
-            {artist?.average_score && (
+            {artist?.total_score && (
               <div className="mt-4 md:mt-0">
                 <RatingChip
-                  ratingNumber={Math.round(artist?.average_score)}
+                  ratingNumber={Math.round(artist?.total_score)}
                   form="label"
                 />
               </div>

@@ -224,7 +224,7 @@ export const TrackCard = (props: {
     "Awful",
     "Bad",
     "OK",
-    "Decent",
+    "Meh",
     "Good",
     "Great",
     "Brilliant",

@@ -14,21 +14,21 @@ generator client {
 
 model ReviewedAlbum {
     id                     Int             @id @default(autoincrement())
-    createdAt              DateTime        @default(now())
-    artist                 Artist          @relation(fields: [artist_db_id], references: [id])
-    artist_db_id           Int
-    name                   String
-    spotify_id             String          @unique
-    release_date           String
-    release_year           Int
-    image_urls             String          @db.Text       //JSON object of array of urls
-    scored_tracks          String          @db.Text        //JSON object of array of tracks
-    best_song              String
-    worst_song             String
-    runtime                String?
-    review_content         String?         @db.Text
-    review_score           Float?
-    review_date            String?
+    createdAt              DateTime        @default(now())                      // Date of creation
+    artist                 Artist          @relation(fields: [artist_db_id], references: [id])  // Artist of album
+    artist_db_id           Int                                                  // Artist ID
+    name                   String                                               // Album name
+    spotify_id             String          @unique                              // Spotify ID
+    release_date           String                                               // Release date of album
+    release_year           Int                                                  // Year of release
+    image_urls             String          @db.Text                             //JSON object of array of urls
+    scored_tracks          String          @db.Text                             //JSON object of array of tracks
+    best_song              String                                               // Best song on album
+    worst_song             String                                               // Worst song on album
+    runtime                String?                                              // Album runtime
+    review_content         String?         @db.Text                             // Review content
+    review_score           Float                                                // Score of review
+    review_date            String?                                              // Date of review
 
     @@index([artist_db_id])
 
@@ -36,24 +36,30 @@ model ReviewedAlbum {
 
 model Artist{
     id                     Int             @id @default(autoincrement())
-    name                   String
-    spotify_id             String          @unique
-    image_urls             String          @db.Text //JSON object of array of urls
-    albums                 ReviewedAlbum[]
-    average_score          Float
-    leaderboard_position   Int?
-    concerts               Concert[]       @relation("ConcertsByArtist")
+    name                   String                                               // Artist name
+    spotify_id             String          @unique                              // Spotify ID
+    image_urls             String          @db.Text                             // JSON object of array of urls
+    albums                 ReviewedAlbum[]                                      // Array of ReviewedAlbums
+    average_score          Float                                                // Average of all album scores
+    leaderboard_position   Int?                                                 // Position in leaderboard                              
+    concerts               Concert[]       @relation("ConcertsByArtist")        // Array of Concerts
+    bonus_points           Float           @default(0)                          // Bonus points for various reasons (e.g., good album, good concert etc)
+    bonus_reason           String?         @db.Text                             // JSON object of array of reasons for bonus points
+    total_score            Float           @default(0)                          // Total score of artist (average_score + bonus_points)
+    createdAt              DateTime        @default(now())                      // Date of creation
+    image_updated_at       DateTime        @default(now())                      // Date of last image update
+
 }
 
 model BookmarkedAlbum {
     id                     Int             @id @default(autoincrement())
-    name                   String
-    spotify_id             String          @unique
-    image_url              String          @db.Text //JSON object of array of urls
-    artist_name            String
-    artist_spotify_id      String
-    release_year           Int
-    release_date           String
+    name                   String                                               // Album name
+    spotify_id             String          @unique                              // Spotify ID
+    image_url              String          @db.Text                             //JSON object of array of urls
+    artist_name            String                                               // Artist name
+    artist_spotify_id      String                                               // Artist Spotify ID
+    release_year           Int                                                  // Year of release
+    release_date           String                                               // Release date of album
 }
 
 model Concert{
