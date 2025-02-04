@@ -12,7 +12,7 @@ import { Label } from "~/components/ui/label";
 import React from "react";
 
 export default function AlbumsPage() {
-  const [reviews, setReviews] = useState<DisplayAlbum[]>([]);
+  const [reviews] = useState<DisplayAlbum[]>([]);
   const [displayType, setDisplayType] = useState<"grid" | "scroller">("grid");
 
   // const {
