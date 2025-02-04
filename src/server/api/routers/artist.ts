@@ -10,7 +10,7 @@ import {
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 const GOOD_ALBUM_BONUS = 0.25;
-const BAD_ALBUM_BONUS = -0.25;
+const BAD_ALBUM_BONUS = 0.25;
 
 export const artistRouter = createTRPCRouter({
   //* This returns all artists and their albums
