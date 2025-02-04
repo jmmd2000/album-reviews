@@ -1,9 +1,9 @@
 import {
   HashLoader,
-  PulseLoader,
-  RotateLoader,
-  ScaleLoader,
-  SyncLoader,
+  // PulseLoader,
+  // RotateLoader,
+  // ScaleLoader,
+  // SyncLoader,
 } from "react-spinners";
 
 interface LoaderProps {

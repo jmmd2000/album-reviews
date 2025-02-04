@@ -5,17 +5,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Head from "next/head";
 import { useTokenContext } from "~/context/TokenContext";
-import { cva } from "class-variance-authority";
-import { Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import { RuleForm } from "~/components/forms/ruleForm";
 
 export default function SettingsPage() {
   const [loadingUpdateImages, setLoadingUpdateImages] = useState(false);
@@ -30,8 +19,8 @@ export default function SettingsPage() {
   const {
     mutate: updateArtistScores,
     isLoading,
-    isSuccess,
-    isError,
+    // isSuccess,
+    // isError,
   } = api.artist.recalculateArtistScores.useMutation();
 
   const handleUpdateImages = () => {

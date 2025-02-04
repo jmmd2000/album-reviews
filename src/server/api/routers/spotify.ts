@@ -9,7 +9,7 @@ import {
   type SpotifyAlbum,
   type SpotifyArtist,
   type SpotifySearchResponse,
-  type ReviewedArtist,
+  // type ReviewedArtist,
   type DisplayAlbum,
 } from "~/types";
 
@@ -136,11 +136,11 @@ export const spotifyRouter = createTRPCRouter({
   getArtistImage: publicProcedure
     .input(z.object({ id: z.string(), accessToken: z.string() }))
     .query(async ({ ctx, input }) => {
-      const artist = (await ctx.prisma.artist.findUnique({
+      const artist = await ctx.prisma.artist.findUnique({
         where: {
           spotify_id: input.id,
         },
-      })) as ReviewedArtist;
+      });
 
       if (artist) {
         const images = JSON.parse(artist.image_urls) as SpotifyImage[];

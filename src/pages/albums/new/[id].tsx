@@ -396,7 +396,7 @@ export default function NewAlbumForm() {
             </div>
             {review !== null && review !== undefined && (
               <div className="mt-4 sm:mt-0">
-                <RatingChip ratingNumber={review.review_score!} form="label" />
+                <RatingChip ratingNumber={review.review_score} form="label" />
               </div>
             )}
             {(review == null || review == undefined) && (

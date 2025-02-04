@@ -402,7 +402,7 @@ export const albumRouter = createTRPCRouter({
             if (album.spotify_id === input.album_spotify_id) {
               newAverageScore += roundedScore;
             } else {
-              newAverageScore += album.review_score!;
+              newAverageScore += album.review_score;
             }
           }
           newAverageScore = newAverageScore / foundArtist?.albums.length;
@@ -530,7 +530,7 @@ export const albumRouter = createTRPCRouter({
           });
         } else {
           for (const album of foundArtist?.albums) {
-            newAverageScore += album.review_score!;
+            newAverageScore += album.review_score;
           }
           newAverageScore = newAverageScore / foundArtist?.albums.length;
 
