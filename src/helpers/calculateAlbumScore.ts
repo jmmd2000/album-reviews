@@ -1,7 +1,7 @@
 export function calculateAlbumScore(
   tracks: { trackID: string; rating: number }[],
 ): number {
-  console.log(tracks);
+  // console.log(tracks);
   let albumScore = 0;
   //* remove tracks that have a score of 0
   const filteredTracks = tracks.filter((track) => track.rating !== 0);

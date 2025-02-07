@@ -6,6 +6,8 @@ import {
   type DisplayAlbum,
   type AlbumReview,
   type SpotifyArtist,
+  type Reason,
+  type MinimalAlbum,
 } from "~/types";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
@@ -53,7 +55,7 @@ export const artistRouter = createTRPCRouter({
         };
       });
 
-      console.log("displayAlbums", displayAlbums);
+      // console.log("displayAlbums", displayAlbums);
 
       return {
         id: tempArtist?.id,
@@ -63,6 +65,9 @@ export const artistRouter = createTRPCRouter({
         leaderboard_position: tempArtist?.leaderboard_position,
         albums: displayAlbums,
         total_score: tempArtist?.total_score,
+        average_score: tempArtist?.average_score,
+        bonus_points: tempArtist?.bonus_points,
+        bonus_reason: tempArtist?.bonus_reason,
       };
     }),
 
@@ -147,7 +152,7 @@ export const artistRouter = createTRPCRouter({
 
         for (const artist of artists) {
           try {
-            console.log(artist.name, artist);
+            // console.log(artist.name, artist);
             const response = await fetch(
               `https://api.spotify.com/v1/artists/${artist.spotify_id}`,
               {
@@ -195,7 +200,7 @@ export const artistRouter = createTRPCRouter({
         return false;
       }
 
-      console.log(`Artist images updated successfully!!!!! ${Date.now()}`);
+      // console.log(`Artist images updated successfully!!!!! ${Date.now()}`);
       return true;
     }),
   recalculateArtistScores: publicProcedure.mutation(async ({ ctx }) => {
@@ -204,19 +209,15 @@ export const artistRouter = createTRPCRouter({
         include: {
           albums: true,
         },
+        orderBy: {
+          total_score: "desc",
+        },
       });
 
       for (const artist of artists) {
         const albums = artist.albums as AlbumReview[];
-        const { newAverageScore, newBonusPoints } = calculateArtistScore(
-          albums,
-          null,
-        );
-
-        let totalScore = newAverageScore + newBonusPoints;
-        if (totalScore > 100) {
-          totalScore = 100;
-        }
+        const { newAverageScore, newBonusPoints, totalScore, bonusReasons } =
+          calculateArtistScore(albums, null);
 
         await ctx.prisma.artist.update({
           where: { id: artist.id },
@@ -224,15 +225,29 @@ export const artistRouter = createTRPCRouter({
             average_score: newAverageScore,
             bonus_points: newBonusPoints,
             total_score: totalScore,
+            bonus_reason: JSON.stringify(bonusReasons),
           },
         });
+      }
+
+      let leaderboardPosition = 1;
+      for (const artist of artists) {
+        await ctx.prisma.artist.update({
+          where: {
+            id: artist.id,
+          },
+          data: {
+            leaderboard_position: leaderboardPosition,
+          },
+        });
+        leaderboardPosition++;
       }
     } catch (error) {
       console.error(`Error recalculating artist scores: ${String(error)}`);
       return false;
     }
 
-    console.log(`Artist scores recalculated successfully!!!!! ${Date.now()}`);
+    // console.log(`Artist scores recalculated successfully!!!!! ${Date.now()}`);
     return true;
   }),
 });
@@ -256,16 +271,46 @@ export const calculateArtistScore = (
     newAverageScore += album.review_score;
   }
 
+  const bonusReasons: Reason[] = [];
+
   if (albums.length > 2) {
     //* Calculate bonus points only for every album after the first 2
-    const albumsToConsider = albums.slice(2);
-    for (const album of albumsToConsider) {
+    //* Also generate the bonus reasons
+    // const albumsToConsider = albums.slice(2);
+    console.log(
+      "--------------------------Starting on albums ---------------------------------",
+    );
+    for (const album of albums) {
+      console.log(album.name);
+      const image_urls = JSON.parse(album.image_urls) as SpotifyImage[];
+      const minimalAlbum: MinimalAlbum = {
+        id: album.id,
+        spotify_id: album.spotify_id,
+        name: album.name,
+        image_urls: image_urls,
+      };
       if (album.review_score < 45) {
+        console.log("Low quality album");
         newBonusPoints -= BAD_ALBUM_BONUS;
+        bonusReasons.push({
+          album: minimalAlbum,
+          reason: "Low quality album",
+          value: -BAD_ALBUM_BONUS,
+        });
       } else if (album.review_score > 55) {
+        console.log("High quality album");
         newBonusPoints += GOOD_ALBUM_BONUS;
+        bonusReasons.push({
+          album: minimalAlbum,
+          reason: "High quality album",
+          value: GOOD_ALBUM_BONUS,
+        });
       }
     }
+    console.log(
+      "--------------------------Finished on albums ---------------------------------",
+    );
+    console.log({ newBonusPoints, bonusReasons });
   }
 
   //* If this is being called while adding a new album, the array of albums doesn't include the new album yet
@@ -275,5 +320,15 @@ export const calculateArtistScore = (
     newAverageScore = newAverageScore / albums.length;
   }
 
-  return { newAverageScore, newBonusPoints };
+  //* Calculate the total score
+  let totalScore = newAverageScore + newBonusPoints;
+  if (totalScore > 100) {
+    totalScore = 100;
+  }
+  console.log({ newAverageScore, newBonusPoints, totalScore, bonusReasons });
+  console.log(
+    "--------------------------recalculationcomplete ---------------------------------",
+  );
+
+  return { newAverageScore, newBonusPoints, totalScore, bonusReasons };
 };

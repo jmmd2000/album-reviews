@@ -51,9 +51,9 @@ export default function NewAlbumPage() {
     },
   );
 
-  useEffect(() => {
-    console.log(searchResults);
-  }, [searchResults]);
+  // useEffect(() => {
+  // console.log(searchResults);
+  // }, [searchResults]);
 
   //* Queries Spotify with a search term and saves the results in state.
   async function handleSearch() {

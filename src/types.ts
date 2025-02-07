@@ -76,6 +76,14 @@ export interface DisplayAlbum {
   scored_tracks?: string;
 }
 
+// This is the bare minimum data for an album
+export interface MinimalAlbum {
+  id: number;
+  spotify_id: string;
+  name: string;
+  image_urls: SpotifyImage[];
+}
+
 export interface ReviewedArtist {
   id: number;
   spotify_id: string;
@@ -288,6 +296,13 @@ export type SpotifyCurrentlyPlaying = {
   };
   is_playing: boolean;
 };
+// This is the reason behind given bonus points
+export interface Reason {
+  reason: string;
+  value: number;
+  album?: MinimalAlbum;
+  concert?: Concert;
+}
 
 // export interface TokenObject {
 //   id: number;

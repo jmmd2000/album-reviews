@@ -52,12 +52,12 @@ export default function NewAlbumForm() {
   };
 
   const handlePreliminaryRatingChange = (rating: number, trackID: string) => {
-    console.log("rating", rating, "trackID", trackID);
+    // console.log("rating", rating, "trackID", trackID);
     const updatedTracks = preliminaryTracks.map((track) => {
       if (track.trackID === trackID) {
         track.rating = rating;
       } else {
-        console.log("rating", rating, "trackID", trackID);
+        // console.log("rating", rating, "trackID", trackID);
       }
       return track;
     });
@@ -66,7 +66,7 @@ export default function NewAlbumForm() {
 
   useEffect(() => {
     if (preliminaryTracks) {
-      console.log("preliminaryTracks", preliminaryTracks);
+      // console.log("preliminaryTracks", preliminaryTracks);
       const score = calculateAlbumScore(preliminaryTracks);
       setPreliminaryRating(score);
     }
@@ -103,7 +103,7 @@ export default function NewAlbumForm() {
     if (isSuccess && albumInfo !== undefined) {
       setAlbumDetails(albumInfo);
 
-      console.log("album setting tracks", albumInfo?.album?.tracks.items);
+      // console.log("album setting tracks", albumInfo?.album?.tracks.items);
       albumInfo?.album?.tracks.items.forEach((track) => {
         const trackRating = {
           trackID: track.id,

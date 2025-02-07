@@ -206,15 +206,18 @@ export const albumRouter = createTRPCRouter({
       //* if artist exists, update the average score
       //* ------------------------------------------
       if (foundArtist) {
-        const { newAverageScore, newBonusPoints } = calculateArtistScore(
-          foundArtist.albums as AlbumReview[],
-          roundedScore,
-        );
+        const { newAverageScore, newBonusPoints, totalScore, bonusReasons } =
+          calculateArtistScore(
+            foundArtist.albums as AlbumReview[],
+            roundedScore,
+          );
 
-        let totalScore = newAverageScore + newBonusPoints;
-        if (totalScore > 100) {
-          totalScore = 100;
-        }
+        console.log({
+          newAverageScore,
+          newBonusPoints,
+          totalScore,
+          bonusReasons,
+        });
 
         await ctx.prisma.artist.update({
           where: {
@@ -224,6 +227,7 @@ export const albumRouter = createTRPCRouter({
             average_score: newAverageScore,
             bonus_points: newBonusPoints,
             total_score: totalScore,
+            bonus_reason: JSON.stringify(bonusReasons),
           },
         });
       }
@@ -386,34 +390,13 @@ export const albumRouter = createTRPCRouter({
         //* round to 0 decimal places
         const roundedScore = Math.round(percentageScore);
 
-        //* Get artist from database, and calculate new average score
+        //* Get artist from database, and calculate new average score and bonus points
         const foundArtist = await ctx.prisma.artist.findUnique({
           where: {
             spotify_id: input.artist_id,
           },
           include: {
             albums: true,
-          },
-        });
-        let newAverageScore = 0;
-
-        if (foundArtist) {
-          for (const album of foundArtist?.albums) {
-            if (album.spotify_id === input.album_spotify_id) {
-              newAverageScore += roundedScore;
-            } else {
-              newAverageScore += album.review_score;
-            }
-          }
-          newAverageScore = newAverageScore / foundArtist?.albums.length;
-        }
-
-        await ctx.prisma.artist.update({
-          where: {
-            spotify_id: input.artist_id,
-          },
-          data: {
-            average_score: newAverageScore,
           },
         });
 
@@ -431,6 +414,73 @@ export const albumRouter = createTRPCRouter({
             review_score: roundedScore,
           },
         });
+
+        const foundArtist2 = await ctx.prisma.artist.findUnique({
+          where: {
+            spotify_id: input.artist_id,
+          },
+          include: {
+            albums: true,
+          },
+        });
+
+        console.log(
+          "------------------------------foundArtist--------------------------",
+          foundArtist,
+        );
+
+        if (foundArtist2) {
+          console.log(
+            "------------------------------foundArtist dataaa--------------------------",
+          );
+          console.log(
+            foundArtist2.total_score,
+            foundArtist2.average_score,
+            foundArtist2.bonus_points,
+            foundArtist2.bonus_reason,
+          );
+          console.log(
+            "------------------------------ end of foundArtist dataaa--------------------------",
+          );
+          const { newAverageScore, newBonusPoints, totalScore, bonusReasons } =
+            calculateArtistScore(foundArtist2.albums as AlbumReview[], null);
+
+          const currentTime = new Date().toLocaleTimeString();
+          console.log({
+            newAverageScore,
+            newBonusPoints,
+            totalScore,
+            bonusReasons,
+            currentTime,
+          });
+          console.log(
+            "------------------------------updating artist--------------------------",
+          );
+          await ctx.prisma.artist
+            .update({
+              where: {
+                spotify_id: input.artist_id,
+              },
+              data: {
+                average_score: newAverageScore,
+                bonus_points: newBonusPoints,
+                total_score: totalScore,
+                bonus_reason: JSON.stringify(bonusReasons),
+              },
+            })
+            .then((res) => {
+              console.log(
+                "------------------------------updated artist complete--------------------------",
+              );
+              console.log({ res });
+            })
+            .catch((err) => {
+              console.log(
+                "------------------------------error updating artist--------------------------",
+              );
+              console.log(err);
+            });
+        }
 
         //* Get all artists, sort them by total score and update their leaderboard position
         const allArtists = await ctx.prisma.artist.findMany({
@@ -518,9 +568,10 @@ export const albumRouter = createTRPCRouter({
           albums: true,
         },
       });
-      let newAverageScore = 0;
+
       //* If the artist has no albums left after this one was deleted
       //* delete the artist from the database. otherwise, calculate the new average score.
+      //* Then remove any bonus points the album provided
       if (foundArtist) {
         if (foundArtist.albums.length === 0) {
           await ctx.prisma.artist.delete({
@@ -529,10 +580,8 @@ export const albumRouter = createTRPCRouter({
             },
           });
         } else {
-          for (const album of foundArtist?.albums) {
-            newAverageScore += album.review_score;
-          }
-          newAverageScore = newAverageScore / foundArtist?.albums.length;
+          const { newAverageScore, newBonusPoints, totalScore, bonusReasons } =
+            calculateArtistScore(foundArtist.albums as AlbumReview[], null);
 
           await ctx.prisma.artist.update({
             where: {
@@ -540,6 +589,9 @@ export const albumRouter = createTRPCRouter({
             },
             data: {
               average_score: newAverageScore,
+              bonus_points: newBonusPoints,
+              total_score: totalScore,
+              bonus_reason: JSON.stringify(bonusReasons),
             },
           });
         }
@@ -814,12 +866,12 @@ export const albumRouter = createTRPCRouter({
 
   getAllBookmarkedAlbums: publicProcedure.query(async ({ ctx }) => {
     const bookmarks = ctx.prisma.bookmarkedAlbum.findMany();
-    console.log(bookmarks);
+    // console.log(bookmarks);
 
     const tempBookmarks = [
       ...(await bookmarks),
     ] as unknown as BookmarkedAlbum[];
-    console.log(tempBookmarks);
+    // console.log(tempBookmarks);
 
     const displayAlbums: DisplayAlbum[] = tempBookmarks.map(
       // (album: DisplayAlbum) => {
@@ -839,7 +891,7 @@ export const albumRouter = createTRPCRouter({
       },
     );
 
-    console.log(displayAlbums);
+    // console.log(displayAlbums);
 
     return displayAlbums;
   }),

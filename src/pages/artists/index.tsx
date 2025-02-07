@@ -39,7 +39,7 @@ export default function ArtistsPage() {
   // } = api.spotify.getAllArtists.useQuery();
 
   if (isSuccess) {
-    console.log(reviewedArtists);
+    // console.log(reviewedArtists);
     // console.log(reviewedArtists[0]?.albums);
   }
 

@@ -8,6 +8,7 @@ import type {
   AlbumReview,
   SpotifyImage,
   DisplayAlbum,
+  Reason,
 } from "~/types";
 import { api } from "~/utils/api";
 import { AlbumGrid } from "../albums/new";
@@ -28,6 +29,7 @@ export default function ArtistDetail() {
   const [albums, setAlbums] = useState<DisplayAlbum[]>([]);
   const [albumReviews, setAlbumReviews] = useState<AlbumReview[]>([]);
   const [images, setImages] = useState<SpotifyImage[]>([]);
+  const [reasons, setReasons] = useState<Reason[]>([]);
 
   const router = useRouter();
   const artistID = router.query.id as string;
@@ -58,6 +60,17 @@ export default function ArtistDetail() {
     //   console.log("artist_tracks", artist_tracks);
     // }
   }, [isSuccess, artist]);
+
+  useEffect(() => {
+    if (artist?.bonus_reason) {
+      const bonusReasons = JSON.parse(artist.bonus_reason) as Reason[];
+      setReasons(bonusReasons);
+    }
+  }, [artist]);
+
+  if (artist === undefined) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -101,6 +114,13 @@ export default function ArtistDetail() {
         )}
       </div>
       <div className="mt-12 space-y-14">
+        <div className="mx-auto w-full">
+          <RatingBreakdown
+            reasons={reasons}
+            average_score={artist.average_score}
+            total_score={artist.total_score}
+          />
+        </div>
         <div className="mx-auto w-full">
           <SongRanking albums={albumReviews} />
         </div>
@@ -277,5 +297,87 @@ const SongRanking = ({ albums }: SongRankingProps) => {
         );
       })}
     </Tabs>
+  );
+};
+
+interface RatingBreakdownProps {
+  average_score: number;
+  total_score: number;
+  reasons: Reason[];
+}
+
+const RatingBreakdown = (props: RatingBreakdownProps) => {
+  const { reasons, average_score, total_score } = props;
+  //* Group reasons by counting occurrences
+  const groupedReasons = reasons.reduce<
+    Record<string, { reason: string; value: number; count: number }>
+  >((acc, { reason, value }) => {
+    const key = `${reason}-${value}`; // Unique key to group
+
+    if (!acc[key]) {
+      acc[key] = { reason, value, count: 1 };
+    } else {
+      acc[key].count++;
+    }
+
+    return acc;
+  }, {});
+
+  return (
+    <div className="m-auto w-full rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-1/2">
+      {/* Header Row */}
+      <div className="mb-2 grid grid-cols-[2fr_1fr_1fr_1fr]">
+        <span>Average album score</span>
+        <span></span>
+        <span></span>
+        <span className="text-right">
+          {Number.isInteger(average_score)
+            ? average_score
+            : average_score.toFixed(1)}
+        </span>
+      </div>
+
+      {/* Grid Container for Rows */}
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-y-2">
+        {Object.values(groupedReasons).map(({ reason, value, count }) => (
+          <>
+            <span
+              key={`${reason}-text`}
+              className={value * count > 0 ? "text-green-400" : "text-red-400"}
+            >
+              {reason}
+            </span>
+            <span
+              key={`${value}-value`}
+              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {value > 0 ? `+${value}` : value}
+            </span>
+            <span
+              key={`${count}-count`}
+              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {count > 1 ? `x${count}` : ""}
+            </span>
+            <span
+              key={`${value * count}-total`}
+              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {value * count > 0 ? `+${value * count}` : value * count}
+            </span>
+          </>
+        ))}
+      </div>
+
+      {/* Total Row */}
+      <div className="mt-2 grid grid-cols-[2fr_1fr_1fr_1fr] border-t-2 border-[#272727] pt-1 font-bold">
+        <span>Total (rounded up)</span>
+        <span></span>
+        <span></span>
+        <span className="text-right">
+          {Number.isInteger(total_score) ? total_score : total_score.toFixed(1)}
+        </span>
+      </div>
+    </div>
   );
 };

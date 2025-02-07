@@ -86,7 +86,7 @@ const TopFourGrid = () => {
 
   useEffect(() => {
     if (isSuccessTopArtists) {
-      console.log(topArtists);
+      // console.log(topArtists);
       const urls = topArtists.map((artist) => {
         const images = JSON.parse(artist.image_urls) as SpotifyImage[];
         return images[0]!.url;
