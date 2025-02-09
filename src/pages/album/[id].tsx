@@ -18,6 +18,7 @@ import { useAuthContext } from "~/context/AuthContext";
 import Head from "next/head";
 import { useTokenContext } from "~/context/TokenContext";
 import React from "react";
+import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 
 export default function AlbumDetail() {
   // const [albumDetails, setAlbumDetails] = useState<AlbumWithExtras>();
@@ -55,11 +56,23 @@ export default function AlbumDetail() {
       <div className="mx-auto mb-28 mt-12 flex w-full flex-col items-center sm:w-[70%]">
         {album ? (
           <div className="flex w-full flex-col items-center justify-start gap-4 sm:max-h-[250px] sm:w-[80%] sm:flex-row sm:gap-12">
-            <img
-              src={images[1]?.url}
-              alt={album.name}
-              className="aspect-square w-44 sm:w-[250px]"
-            />
+            <Dialog>
+              <DialogTrigger>
+                <img
+                  src={images[1]?.url}
+                  alt={album.name}
+                  className="aspect-square w-44 sm:w-[250px]"
+                />
+              </DialogTrigger>
+              <DialogContent>
+                <img
+                  src={images[0]?.url}
+                  alt={album.name}
+                  className="aspect-square w-[640px] p-0"
+                />
+              </DialogContent>
+            </Dialog>
+
             <div className="flex flex-col gap-2 sm:mt-8 sm:gap-4">
               <h1 className="inline-block min-w-[350px] max-w-[500px] overflow-hidden overflow-ellipsis text-xl font-bold text-white sm:w-full sm:text-3xl">
                 {album?.name}
