@@ -55,6 +55,16 @@ export const artistRouter = createTRPCRouter({
         };
       });
 
+      displayAlbums.sort((a, b) => {
+        if (a.release_year > b.release_year) {
+          return 1;
+        }
+        if (a.release_year < b.release_year) {
+          return -1;
+        }
+        return 0;
+      });
+
       // console.log("displayAlbums", displayAlbums);
 
       return {
@@ -135,6 +145,9 @@ export const artistRouter = createTRPCRouter({
           artist: {
             spotify_id: input,
           },
+        },
+        orderBy: {
+          release_year: "desc",
         },
         // include: {
         //   artist: true,
@@ -296,6 +309,13 @@ export const calculateArtistScore = (
           album: minimalAlbum,
           reason: "Low quality album",
           value: -BAD_ALBUM_BONUS,
+        });
+      } else if (album.review_score > 45 && album.review_score < 55) {
+        console.log("Mid quality album");
+        bonusReasons.push({
+          album: minimalAlbum,
+          reason: "Mid quality album",
+          value: 0,
         });
       } else if (album.review_score > 55) {
         console.log("High quality album");

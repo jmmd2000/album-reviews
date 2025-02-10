@@ -323,9 +323,10 @@ const RatingBreakdown = (props: RatingBreakdownProps) => {
     return acc;
   }, {});
 
+  console.log({ reasons });
+
   return (
     <div className="m-auto w-full rounded-md border border-[#272727] bg-gray-700 bg-opacity-10 bg-clip-padding p-3 text-sm text-[#d2d2d3a8] shadow-lg backdrop-blur-sm transition md:w-1/2">
-      {/* Header Row */}
       <div className="mb-2 grid grid-cols-[2fr_1fr_1fr_1fr]">
         <span>Average album score</span>
         <span></span>
@@ -337,31 +338,27 @@ const RatingBreakdown = (props: RatingBreakdownProps) => {
         </span>
       </div>
 
-      {/* Grid Container for Rows */}
       <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-y-2">
         {Object.values(groupedReasons).map(({ reason, value, count }) => (
           <>
-            <span
-              key={`${reason}-text`}
-              className={value * count > 0 ? "text-green-400" : "text-red-400"}
-            >
+            <span key={`${reason}-text`} className={getRatingColour(value)}>
               {reason}
             </span>
             <span
               key={`${value}-value`}
-              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+              className={`text-right ${getRatingColour(value)}`}
             >
               {value > 0 ? `+${value}` : value}
             </span>
             <span
               key={`${count}-count`}
-              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+              className={`text-right ${getRatingColour(value)}`}
             >
               {count > 1 ? `x${count}` : ""}
             </span>
             <span
               key={`${value * count}-total`}
-              className={`text-right ${value * count > 0 ? "text-green-400" : "text-red-400"}`}
+              className={`text-right ${getRatingColour(value)}`}
             >
               {value * count > 0 ? `+${value * count}` : value * count}
             </span>
@@ -369,7 +366,6 @@ const RatingBreakdown = (props: RatingBreakdownProps) => {
         ))}
       </div>
 
-      {/* Total Row */}
       <div className="mt-2 grid grid-cols-[2fr_1fr_1fr_1fr] border-t-2 border-[#272727] pt-1 font-bold">
         <span>Total (rounded up)</span>
         <span></span>
@@ -380,4 +376,14 @@ const RatingBreakdown = (props: RatingBreakdownProps) => {
       </div>
     </div>
   );
+};
+
+const getRatingColour = (value: number) => {
+  if (value > 0) {
+    return "text-violet-600";
+  } else if (value < 0) {
+    return "text-red-600";
+  } else {
+    return "text-lime-600";
+  }
 };
